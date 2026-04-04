@@ -21,9 +21,9 @@ public partial class Gasto
 
     public int CreadoPorId { get; set; }
 
-    public virtual Usuario CreadoPor { get; set; } = null!;
+    public virtual Usuario? CreadoPor { get; set; }
 
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
 
-    public virtual Vivienda Vivienda { get; set; } = null!;
+    public virtual Vivienda? Vivienda { get; set; }
 }

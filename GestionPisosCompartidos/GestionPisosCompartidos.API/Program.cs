@@ -14,13 +14,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Repositories
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IViviendaRepository, ViviendaRepository>();
+builder.Services.AddScoped<IGastoRepository, GastoRepository>();
 
 // Services
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IViviendaService, ViviendaService>();
+builder.Services.AddScoped<IGastoService, GastoService>();
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
