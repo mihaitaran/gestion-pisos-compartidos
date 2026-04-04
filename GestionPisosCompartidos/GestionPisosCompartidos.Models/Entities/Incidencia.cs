@@ -23,7 +23,7 @@ public partial class Incidencia
 
     public DateTime? FechaResolucion { get; set; }
 
-    public virtual Usuario ReportadaPor { get; set; } = null!;
+    public virtual Usuario? ReportadaPor { get; set; } = null!;
 
-    public virtual Vivienda Vivienda { get; set; } = null!;
+    public virtual Vivienda? Vivienda { get; set; } = null!;
 }

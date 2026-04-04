@@ -29,7 +29,7 @@ public partial class TareasCalendario
 
     public virtual Usuario? AsignadaA { get; set; }
 
-    public virtual Usuario CreadaPor { get; set; } = null!;
+    public virtual Usuario? CreadaPor { get; set; } = null!;
 
-    public virtual Vivienda Vivienda { get; set; } = null!;
+    public virtual Vivienda? Vivienda { get; set; } = null!;
 }

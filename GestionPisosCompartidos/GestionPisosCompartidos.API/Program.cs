@@ -16,12 +16,16 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IViviendaRepository, ViviendaRepository>();
 builder.Services.AddScoped<IGastoRepository, GastoRepository>();
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
+builder.Services.AddScoped<IIncidenciaRepository, IncidenciaRepository>();
+builder.Services.AddScoped<ITareaCalendarioRepository, TareaCalendarioRepository>();
 
 // Services
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IViviendaService, ViviendaService>();
 builder.Services.AddScoped<IGastoService, GastoService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
+builder.Services.AddScoped<IIncidenciaService, IncidenciaService>();
+builder.Services.AddScoped<ITareaCalendarioService, TareaCalendarioService>();
 
 // Controllers
 builder.Services.AddControllers()
