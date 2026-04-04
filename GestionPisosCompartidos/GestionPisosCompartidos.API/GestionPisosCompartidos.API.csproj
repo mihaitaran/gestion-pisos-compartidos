@@ -12,10 +12,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GestionPisosCompartidos.Models\GestionPisosCompartidos.Models.csproj" />
+    <ProjectReference Include="..\GestionPisosCompartidos.Repositories\GestionPisosCompartidos.Repositories.csproj" />
     <ProjectReference Include="..\GestionPisosCompartidos.Services\GestionPisosCompartidos.Services.csproj" />
   </ItemGroup>
 

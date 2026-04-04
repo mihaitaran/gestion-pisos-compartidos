@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GestionPisosCompartidos.Repositories;
+namespace GestionPisosCompartidos.Models.Entities;
 
 public partial class TareasCalendario
 {

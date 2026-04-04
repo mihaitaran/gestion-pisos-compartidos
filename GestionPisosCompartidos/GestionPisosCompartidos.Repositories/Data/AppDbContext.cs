@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using GestionPisosCompartidos.Repositories;
+﻿using GestionPisosCompartidos.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GestionPisosCompartidos.Repositories.Data;
