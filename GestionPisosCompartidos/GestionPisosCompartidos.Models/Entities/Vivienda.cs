@@ -27,7 +27,7 @@ public partial class Vivienda
 
     public virtual ICollection<InquilinosVivienda> InquilinosVivienda { get; set; } = new List<InquilinosVivienda>();
 
-    public virtual Usuario Propietario { get; set; } = null!;
+    public virtual Usuario? Propietario { get; set; }
 
     public virtual ICollection<TareasCalendario> TareasCalendarios { get; set; } = new List<TareasCalendario>();
 }

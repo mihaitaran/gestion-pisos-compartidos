@@ -13,9 +13,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IViviendaRepository, ViviendaRepository>();
 
 // Services
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IViviendaService, ViviendaService>();
 
 // Controllers
 builder.Services.AddControllers();
