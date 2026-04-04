@@ -17,7 +17,7 @@ public partial class InquilinosVivienda
 
     public bool Activo { get; set; }
 
-    public virtual Usuario Inquilino { get; set; } = null!;
+    public virtual Usuario? Inquilino { get; set; } = null!;
 
-    public virtual Vivienda Vivienda { get; set; } = null!;
+    public virtual Vivienda? Vivienda { get; set; } = null!;
 }

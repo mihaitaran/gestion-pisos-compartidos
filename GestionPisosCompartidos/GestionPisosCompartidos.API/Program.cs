@@ -18,6 +18,7 @@ builder.Services.AddScoped<IGastoRepository, GastoRepository>();
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 builder.Services.AddScoped<IIncidenciaRepository, IncidenciaRepository>();
 builder.Services.AddScoped<ITareaCalendarioRepository, TareaCalendarioRepository>();
+builder.Services.AddScoped<IInquilinoViviendaRepository, InquilinoViviendaRepository>();
 
 // Services
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
@@ -26,6 +27,7 @@ builder.Services.AddScoped<IGastoService, GastoService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<IIncidenciaService, IncidenciaService>();
 builder.Services.AddScoped<ITareaCalendarioService, TareaCalendarioService>();
+builder.Services.AddScoped<IInquilinoViviendaService, InquilinoViviendaService>();
 
 // Controllers
 builder.Services.AddControllers()
