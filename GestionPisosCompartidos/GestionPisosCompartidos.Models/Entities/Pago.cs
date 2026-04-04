@@ -17,7 +17,7 @@ public partial class Pago
 
     public DateTime? FechaPago { get; set; }
 
-    public virtual Gasto Gasto { get; set; } = null!;
+    public virtual Gasto? Gasto { get; set; } = null!;
 
-    public virtual Usuario Inquilino { get; set; } = null!;
+    public virtual Usuario? Inquilino { get; set; } = null!;
 }
