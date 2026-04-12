@@ -1,0 +1,135 @@
+﻿@page "/register"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="register-container">
+    <h2>Crear cuenta</h2>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger">@mensajeError</div>
+    }
+
+    @if (!string.IsNullOrEmpty(mensajeCorrecto))
+    {
+        <div class="alert alert-success">@mensajeCorrecto</div>
+    }
+
+    <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" class="form-control" @bind="nombre" />
+    </div>
+
+    <div class="form-group">
+        <label>Apellidos</label>
+        <input type="text" class="form-control" @bind="apellidos" />
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" @bind="email" />
+    </div>
+
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" @bind="password" />
+    </div>
+
+    <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" class="form-control" @bind="confirmPassword" />
+    </div>
+
+    <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" class="form-control" @bind="telefono" />
+    </div>
+
+    <div class="form-group">
+        <label>Rol</label>
+        <select class="form-control" @bind="rol">
+            <option value="">Selecciona un rol</option>
+            <option value="Propietario">Propietario</option>
+            <option value="Inquilino">Inquilino</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary" @onclick="Registro" disabled="@cargando">
+        @if (cargando)
+        {
+            <span>Registrando...</span>
+        }
+        else
+        {
+            <span>Registrarse</span>
+        }
+    </button>
+
+    <p class="mt-3">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+</div>
+
+@code {
+    private string nombre = "";
+    private string apellidos = "";
+    private string email = "";
+    private string password = "";
+    private string confirmPassword = "";
+    private string telefono = "";
+    private string rol = "";
+    private string mensajeError = "";
+    private string mensajeCorrecto = "";
+    private bool cargando = false;
+
+    private async Task Registro()
+    {
+        cargando = true;
+        mensajeError = "";
+        mensajeCorrecto = "";
+
+        if (password != confirmPassword)
+        {
+            mensajeError = "Las contraseñas no coinciden";
+            cargando = false;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(rol))
+        {
+            mensajeError = "Selecciona un rol";
+            cargando = false;
+            return;
+        }
+
+        try
+        {
+            var registerData = new
+            {
+                Nombre = nombre,
+                Apellidos = apellidos,
+                Email = email,
+                Password = password,
+                Telefono = telefono,
+                Rol = rol
+            };
+
+            var response = await Http.PostAsJsonAsync("api/auth/register", registerData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensajeCorrecto = "Cuenta creada correctamente. Redirigiendo...";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                mensajeError = "El email ya está registrado";
+            }
+        }
+        catch
+        {
+            mensajeError = "Error al conectar con el servidor";
+        }
+
+        cargando = false;
+    }
+}

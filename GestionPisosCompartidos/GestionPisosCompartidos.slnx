@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="GestionPisosCompartidos.API/GestionPisosCompartidos.API.csproj" Id="2feb4973-23de-4d72-9f0b-5be1aa52f4a1" />
+  <Project Path="GestionPisosCompartidos.Client/GestionPisosCompartidos.Client.csproj" Id="1a18d94b-7f71-4720-ae7e-f0780bd17be0" />
   <Project Path="GestionPisosCompartidos.Models/GestionPisosCompartidos.Models.csproj" Id="4c499ae0-cb3f-4941-891b-19399049b1c9" />
   <Project Path="GestionPisosCompartidos.Repositories/GestionPisosCompartidos.Repositories.csproj" Id="1d11d3ba-fd6e-442e-bc69-4d7047899699" />
   <Project Path="GestionPisosCompartidos.Services/GestionPisosCompartidos.Services.csproj" Id="b84c8bd2-1240-41b4-a1d8-fc08b46983d1" />
-  <Project Path="GestionPisosCompartidos.Web/GestionPisosCompartidos.Web.csproj" Id="f75b0781-70ad-4603-9f33-c610711805ff" />
 </Solution>
