@@ -1,5 +1,5 @@
 ﻿@page "/register"
-@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="register-container">
@@ -102,19 +102,9 @@
 
         try
         {
-            var registerData = new
-            {
-                Nombre = nombre,
-                Apellidos = apellidos,
-                Email = email,
-                Password = password,
-                Telefono = telefono,
-                Rol = rol
-            };
+            var success = await AuthService.RegisterAsync(nombre, apellidos, email, password, telefono, rol);
 
-            var response = await Http.PostAsJsonAsync("api/auth/register", registerData);
-
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 mensajeCorrecto = "Cuenta creada correctamente. Redirigiendo...";
                 await Task.Delay(1500);

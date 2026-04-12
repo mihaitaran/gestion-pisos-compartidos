@@ -1,5 +1,5 @@
 ﻿@page "/login"
-@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="login-container">
@@ -47,12 +47,10 @@
 
         try
         {
-            var loginData = new { Email = email, Password = password };
-            var response = await Http.PostAsJsonAsync("api/auth/login", loginData);
+            var success = await AuthService.LoginAsync(email, password);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
-                var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
                 Navigation.NavigateTo("/dashboard");
             }
             else
@@ -66,14 +64,5 @@
         }
 
         cargando = false;
-    }
-
-    private class AuthResponse
-    {
-        public string Token { get; set; } = "";
-        public int UsuarioId { get; set; }
-        public string Nombre { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Rol { get; set; } = "";
     }
 }
