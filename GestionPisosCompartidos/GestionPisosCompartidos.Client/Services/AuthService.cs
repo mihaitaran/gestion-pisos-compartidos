@@ -1,21 +1,23 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazored.LocalStorage;
 using System.Net.Http.Json;
 
 namespace GestionPisosCompartidos.Client.Services
 {
     public class AuthService
     {
-        private readonly IJSRuntime _js;
+        private readonly ILocalStorageService _localStorage;
         private readonly HttpClient _http;
 
-        public AuthService(IJSRuntime js, HttpClient http)
+        public AuthService(ILocalStorageService localStorage, HttpClient http)
         {
-            _js = js;
+            _localStorage = localStorage;
             _http = http;
         }
 
         public async Task<bool> LoginAsync(string email, string password)
         {
+            await LogoutAsync();
+
             var loginData = new { Email = email, Password = password };
             var response = await _http.PostAsJsonAsync("api/auth/login", loginData);
 
@@ -24,13 +26,13 @@ namespace GestionPisosCompartidos.Client.Services
             var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
             if (result == null) return false;
 
-            await _js.InvokeVoidAsync("authStorage.setToken", result.Token);
-            await _js.InvokeVoidAsync("authStorage.setUser", new
+            await _localStorage.SetItemAsStringAsync("jwt_token", result.Token);
+            await _localStorage.SetItemAsync("user_data", new UserData
             {
-                result.UsuarioId,
-                result.Nombre,
-                result.Email,
-                result.Rol
+                UsuarioId = result.UsuarioId,
+                Nombre = result.Nombre,
+                Email = result.Email,
+                Rol = result.Rol
             });
 
             return true;
@@ -54,17 +56,18 @@ namespace GestionPisosCompartidos.Client.Services
 
         public async Task<string?> GetTokenAsync()
         {
-            return await _js.InvokeAsync<string?>("authStorage.getToken");
+            return await _localStorage.GetItemAsStringAsync("jwt_token");
         }
 
         public async Task<UserData?> GetUserAsync()
         {
-            return await _js.InvokeAsync<UserData?>("authStorage.getUser");
+            return await _localStorage.GetItemAsync<UserData>("user_data");
         }
 
         public async Task LogoutAsync()
         {
-            await _js.InvokeVoidAsync("authStorage.logout");
+            await _localStorage.RemoveItemAsync("jwt_token");
+            await _localStorage.RemoveItemAsync("user_data");
         }
 
         public async Task<bool> IsAuthenticatedAsync()
