@@ -1,0 +1,109 @@
+﻿@page "/mis-pagos"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Mis pagos</h2>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (pagos.Count == 0)
+{
+    <p>No tienes pagos asignados.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th>Fecha pago</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in pagos)
+            {
+                <tr>
+                    <td>@p.Gasto?.Concepto</td>
+                    <td>@p.Importe.ToString("F2") €</td>
+                    <td>@p.Estado</td>
+                    <td>@(p.FechaPago ?? "-")</td>
+                    <td>
+                        @if (p.Estado == "Pendiente")
+                        {
+                            <button class="btn btn-sm btn-success" @onclick="() => MarcarPagado(p.Id)">Marcar pagado</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="resumen">
+        <p>Total pendiente: @pagos.Where(p => p.Estado == "Pendiente").Sum(p => p.Importe).ToString("F2") €</p>
+        <p>Total pagado: @pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Importe).ToString("F2") €</p>
+    </div>
+}
+
+@code {
+    private List<PagoDTO> pagos = new();
+    private bool cargando = true;
+    private string mensaje = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarPagos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarPagos()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                pagos = await Http.GetFromJsonAsync<List<PagoDTO>>($"api/pagos/inquilino/{user.UsuarioId}") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar pagos";
+        }
+        cargando = false;
+    }
+
+    private async Task MarcarPagado(int id)
+    {
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/pagos/{id}/estado", "Pagado");
+            mensaje = response.IsSuccessStatusCode ? "Pago registrado" : "Error al registrar pago";
+            await CargarPagos();
+        }
+        catch
+        {
+            mensaje = "Error al marcar como pagado";
+        }
+    }
+}

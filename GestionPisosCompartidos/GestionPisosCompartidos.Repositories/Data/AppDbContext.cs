@@ -65,7 +65,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasIndex(e => e.InquilinoId);
             entity.HasIndex(e => e.ViviendaId);
-            entity.HasIndex(e => new { e.InquilinoId, e.ViviendaId, e.FechaInicio }).IsUnique();
+            entity.HasIndex(e => new { e.InquilinoId, e.ViviendaId, e.FechaInicio });
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
 

@@ -1,0 +1,113 @@
+﻿@page "/incidencias"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Incidencias</h2>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (incidencias.Count == 0)
+{
+    <p>No hay incidencias registradas.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Vivienda</th>
+                <th>Reportada por</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in incidencias)
+            {
+                <tr>
+                    <td>@i.Titulo</td>
+                    <td>@i.Vivienda?.Direccion - @i.Vivienda?.Ciudad</td>
+                    <td>@i.ReportadaPor?.Nombre @i.ReportadaPor?.Apellidos</td>
+                    <td>@i.Prioridad</td>
+                    <td>@i.Estado</td>
+                    <td>@i.FechaCreacion</td>
+                    <td>
+                        @if (i.Estado != "Resuelta" && i.Estado != "Cerrada")
+                        {
+                            <select class="form-control form-control-sm"
+                                    @onchange="(e) => CambiarEstado(i.Id, e.Value?.ToString() ?? string.Empty)">
+                                <option value="">Cambiar estado</option>
+                                <option value="Abierta">Abierta</option>
+                                <option value="EnProceso">En proceso</option>
+                                <option value="Resuelta">Resuelta</option>
+                                <option value="Cerrada">Cerrada</option>
+                            </select>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<IncidenciaDTO> incidencias = new();
+    private bool cargando = true;
+    private string mensaje = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarIncidencias();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarIncidencias()
+    {
+        cargando = true;
+        try
+        {
+            incidencias = await Http.GetFromJsonAsync<List<IncidenciaDTO>>("api/incidencias") ?? new();
+        }
+        catch
+        {
+            mensaje = "Error al cargar incidencias";
+        }
+        cargando = false;
+    }
+
+    private async Task CambiarEstado(int id, string nuevoEstado)
+    {
+        if (string.IsNullOrEmpty(nuevoEstado)) return;
+
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"api/incidencias/{id}/estado", nuevoEstado);
+            mensaje = response.IsSuccessStatusCode ? "Estado actualizado" : "Error al actualizar";
+            await CargarIncidencias();
+        }
+        catch
+        {
+            mensaje = "Error al cambiar estado";
+        }
+    }
+}

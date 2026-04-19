@@ -1,0 +1,156 @@
+﻿@page "/viviendas/{ViviendaId:int}/inquilinos"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Inquilinos de la vivienda</h2>
+
+<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/viviendas")'>Volver</button>
+
+<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+    @(mostrarForm ? "Cancelar" : "Añadir inquilino")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>Asignar inquilino</h3>
+
+        <div class="form-group">
+            <label>Email del inquilino</label>
+            <input type="email" class="form-control" @bind="emailInquilino" />
+        </div>
+
+        <button class="btn btn-success" @onclick="AsignarInquilino">Asignar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (inquilinos.Count == 0)
+{
+    <p>No hay inquilinos asignados.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Fecha inicio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var iv in inquilinos)
+            {
+                <tr>
+                    <td>@iv.Inquilino?.Nombre @iv.Inquilino?.Apellidos</td>
+                    <td>@iv.Inquilino?.Email</td>
+                    <td>@iv.FechaInicio</td>
+                    <td>@(iv.Activo ? "Activo" : "Inactivo")</td>
+                    <td>
+                        @if (iv.Activo)
+                        {
+                            <button class="btn btn-sm btn-danger" @onclick="() => DesactivarInquilino(iv.Id)">Desactivar</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int ViviendaId { get; set; }
+
+    private List<InquilinoViviendaDTO> inquilinos = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string emailInquilino = "";
+    private string mensaje = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarInquilinos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarInquilinos()
+    {
+        cargando = true;
+        try
+        {
+            inquilinos = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/vivienda/{ViviendaId}") ?? new();
+        }
+        catch
+        {
+            mensaje = "Error al cargar inquilinos";
+        }
+        cargando = false;
+    }
+
+    private async Task AsignarInquilino()
+    {
+        try
+        {
+            var usuarios = await Http.GetFromJsonAsync<List<UsuarioDTO>>("api/usuarios") ?? new();
+            var inquilino = usuarios.FirstOrDefault(u => u.Email == emailInquilino && u.Rol == "Inquilino");
+
+            if (inquilino == null)
+            {
+                mensaje = "No se encontró un inquilino con ese email";
+                return;
+            }
+
+            var data = new
+            {
+                InquilinoId = inquilino.Id,
+                ViviendaId = ViviendaId
+            };
+
+            var response = await Http.PostAsJsonAsync("api/inquilinosviviendas", data);
+            mensaje = response.IsSuccessStatusCode ? "Inquilino asignado" : "Error al asignar";
+            mostrarForm = false;
+            emailInquilino = "";
+            await CargarInquilinos();
+        }
+        catch
+        {
+            mensaje = "Error al asignar inquilino";
+        }
+    }
+
+    private async Task DesactivarInquilino(int id)
+    {
+        try
+        {
+            var response = await Http.PatchAsync($"api/inquilinosviviendas/{id}/desactivar", null);
+            mensaje = response.IsSuccessStatusCode ? "Inquilino desactivado" : "Error al desactivar";
+            await CargarInquilinos();
+        }
+        catch
+        {
+            mensaje = "Error al desactivar";
+        }
+    }
+}

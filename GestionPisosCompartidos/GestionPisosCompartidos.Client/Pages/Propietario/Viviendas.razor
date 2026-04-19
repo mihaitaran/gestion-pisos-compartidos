@@ -1,0 +1,221 @@
+﻿@page "/viviendas"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Mis viviendas</h2>
+
+<button class="btn btn-primary" @onclick="MostrarFormulario">
+    @(mostrarForm ? "Cancelar" : "Añadir vivienda")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>@(viviendaEditando != null ? "Editar vivienda" : "Nueva vivienda")</h3>
+
+        <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" class="form-control" @bind="direccion" />
+        </div>
+
+        <div class="form-group">
+            <label>Ciudad</label>
+            <input type="text" class="form-control" @bind="ciudad" />
+        </div>
+
+        <div class="form-group">
+            <label>Código postal</label>
+            <input type="text" class="form-control" @bind="codigoPostal" />
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <input type="text" class="form-control" @bind="descripcion" />
+        </div>
+
+        <div class="form-group">
+            <label>Nº Habitaciones</label>
+            <input type="number" class="form-control" @bind="numHabitaciones" />
+        </div>
+
+        <button class="btn btn-success" @onclick="GuardarVivienda">Guardar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (viviendas.Count == 0)
+{
+    <p>No tienes viviendas registradas.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Dirección</th>
+                <th>Ciudad</th>
+                <th>C.P.</th>
+                <th>Habitaciones</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in viviendas)
+            {
+                <tr>
+                    <td>@v.Direccion</td>
+                    <td>@v.Ciudad</td>
+                    <td>@v.CodigoPostal</td>
+                    <td>@v.NumHabitaciones</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => EditarVivienda(v)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarVivienda(v.Id)">Eliminar</button>
+                        <button class="btn btn-sm btn-info" @onclick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/inquilinos")'>Inquilinos</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ViviendaDTO> viviendas = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+    private ViviendaDTO? viviendaEditando = null;
+
+    private string direccion = "";
+    private string ciudad = "";
+    private string codigoPostal = "";
+    private string descripcion = "";
+    private int numHabitaciones = 1;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarViviendas();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarViviendas()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar las viviendas";
+        }
+        cargando = false;
+    }
+
+    private void MostrarFormulario()
+    {
+        mostrarForm = !mostrarForm;
+        if (!mostrarForm) LimpiarFormulario();
+    }
+
+    private async Task GuardarVivienda()
+    {
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            if (viviendaEditando != null)
+            {
+                var data = new
+                {
+                    Direccion = direccion,
+                    Ciudad = ciudad,
+                    CodigoPostal = codigoPostal,
+                    Descripcion = descripcion,
+                    NumHabitaciones = numHabitaciones
+                };
+                var response = await Http.PutAsJsonAsync($"api/viviendas/{viviendaEditando.Id}", data);
+                mensaje = response.IsSuccessStatusCode ? "Vivienda actualizada" : "Error al actualizar";
+            }
+            else
+            {
+                var data = new
+                {
+                    Direccion = direccion,
+                    Ciudad = ciudad,
+                    CodigoPostal = codigoPostal,
+                    Descripcion = descripcion,
+                    NumHabitaciones = numHabitaciones,
+                    PropietarioId = user.UsuarioId
+                };
+                var response = await Http.PostAsJsonAsync("api/viviendas", data);
+                mensaje = response.IsSuccessStatusCode ? "Vivienda creada" : "Error al crear";
+            }
+
+            mostrarForm = false;
+            LimpiarFormulario();
+            await CargarViviendas();
+        }
+        catch
+        {
+            mensaje = "Error al guardar";
+        }
+    }
+
+    private void EditarVivienda(ViviendaDTO v)
+    {
+        viviendaEditando = v;
+        direccion = v.Direccion;
+        ciudad = v.Ciudad;
+        codigoPostal = v.CodigoPostal;
+        descripcion = v.Descripcion ?? "";
+        numHabitaciones = v.NumHabitaciones;
+        mostrarForm = true;
+    }
+
+    private async Task EliminarVivienda(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/viviendas/{id}");
+            mensaje = response.IsSuccessStatusCode ? "Vivienda eliminada" : "Error al eliminar";
+            await CargarViviendas();
+        }
+        catch
+        {
+            mensaje = "Error al eliminar";
+        }
+    }
+
+    private void LimpiarFormulario()
+    {
+        viviendaEditando = null;
+        direccion = "";
+        ciudad = "";
+        codigoPostal = "";
+        descripcion = "";
+        numHabitaciones = 1;
+    }
+}

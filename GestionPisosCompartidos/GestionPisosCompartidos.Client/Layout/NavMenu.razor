@@ -1,6 +1,38 @@
-﻿<div class="nav-menu">
+﻿@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+
+<div class="nav-menu">
     <nav>
-        <a href="/login">Login</a>
-        <a href="/register">Registro</a>
+        <a href="/dashboard">Dashboard</a>
+
+        @if (rol == "Propietario")
+        {
+            <a href="/viviendas">Viviendas</a>
+            <a href="/gastos">Gastos</a>
+            <a href="/pagos">Pagos</a>
+            <a href="/incidencias">Incidencias</a>
+        }
+        else if (rol == "Inquilino")
+        {
+            <a href="/mis-pagos">Mis pagos</a>
+            <a href="/mis-incidencias">Incidencias</a>
+            <a href="/calendario">Calendario</a>
+        }
     </nav>
 </div>
+
+@code {
+    private string rol = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                rol = user.Rol;
+                StateHasChanged();
+            }
+        }
+    }
+}

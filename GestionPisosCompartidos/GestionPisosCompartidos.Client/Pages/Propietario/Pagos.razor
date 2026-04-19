@@ -1,0 +1,127 @@
+﻿@page "/pagos"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Estado de pagos</h2>
+
+<div class="form-group">
+    <label>Filtrar por vivienda</label>
+    <select class="form-control" @bind="viviendaSeleccionada" @bind:after="CargarPagos">
+        <option value="0">Todas las viviendas</option>
+        @foreach (var v in viviendas)
+        {
+            <option value="@v.Id">@v.Direccion - @v.Ciudad</option>
+        }
+    </select>
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (pagos.Count == 0)
+{
+    <p>No hay pagos registrados.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Inquilino</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th>Fecha pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in pagos)
+            {
+                <tr>
+                    <td>@p.Gasto?.Concepto</td>
+                    <td>@p.Inquilino?.Nombre @p.Inquilino?.Apellidos</td>
+                    <td>@p.Importe.ToString("F2") €</td>
+                    <td>@p.Estado</td>
+                    <td>@(p.FechaPago ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<PagoDTO> pagos = new();
+    private List<ViviendaDTO> viviendas = new();
+    private int viviendaSeleccionada = 0;
+    private bool cargando = true;
+    private string mensaje = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarViviendas();
+            await CargarPagos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarViviendas()
+    {
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar viviendas";
+        }
+    }
+
+    private async Task CargarPagos()
+    {
+        cargando = true;
+        try
+        {
+            if (viviendaSeleccionada > 0)
+            {
+                var gastos = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{viviendaSeleccionada}") ?? new();
+                pagos = gastos.SelectMany(g => g.Pagos.Select(p => new PagoDTO
+                {
+                    Id = p.Id,
+                    Importe = p.Importe,
+                    Estado = p.Estado,
+                    FechaPago = p.FechaPago,
+                    Inquilino = p.Inquilino,
+                    Gasto = new GastoDTO { Concepto = g.Concepto, Categoria = g.Categoria }
+                })).ToList();
+            }
+            else
+            {
+                pagos = await Http.GetFromJsonAsync<List<PagoDTO>>("api/pagos") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar pagos";
+        }
+        cargando = false;
+    }
+}

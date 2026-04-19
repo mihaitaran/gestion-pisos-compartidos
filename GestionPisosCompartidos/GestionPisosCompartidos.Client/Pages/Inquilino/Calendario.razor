@@ -1,0 +1,210 @@
+﻿@page "/calendario"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Calendario de tareas</h2>
+
+<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+    @(mostrarForm ? "Cancelar" : "Nueva tarea")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>Nueva tarea</h3>
+
+        <div class="form-group">
+            <label>Vivienda</label>
+            <select class="form-control" @bind="viviendaSeleccionada">
+                <option value="0">Selecciona vivienda</option>
+                @foreach (var v in viviendas)
+                {
+                    <option value="@v.Vivienda?.Id">@v.Vivienda?.Direccion - @v.Vivienda?.Ciudad</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Título</label>
+            <input type="text" class="form-control" @bind="titulo" />
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea class="form-control" @bind="descripcion"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Fecha programada</label>
+            <input type="datetime-local" class="form-control" @bind="fechaProgramada" />
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" @bind="recurrente" /> Tarea recurrente
+            </label>
+        </div>
+
+        @if (recurrente)
+        {
+            <div class="form-group">
+                <label>Cada cuántos días</label>
+                <input type="number" class="form-control" @bind="frecuenciaDias" />
+            </div>
+        }
+
+        <button class="btn btn-success" @onclick="CrearTarea">Guardar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (tareas.Count == 0)
+{
+    <p>No hay tareas programadas.</p>
+}
+else
+{
+    <h3>Pendientes</h3>
+    @foreach (var t in tareas.Where(t => !t.Completada).OrderBy(t => t.FechaProgramada))
+    {
+        <div class="tarea-card">
+            <h4>@t.Titulo</h4>
+            <p>@t.Descripcion</p>
+            <p>Fecha: @t.FechaProgramada</p>
+            @if (t.Recurrente)
+            {
+                <p>Se repite cada @t.FrecuenciaDias días</p>
+            }
+            <button class="btn btn-sm btn-success" @onclick="() => CompletarTarea(t.Id)">Completar</button>
+        </div>
+    }
+
+    <h3>Completadas</h3>
+    @foreach (var t in tareas.Where(t => t.Completada))
+    {
+        <div class="tarea-card completada">
+            <h4>@t.Titulo</h4>
+            <p>Fecha: @t.FechaProgramada</p>
+        </div>
+    }
+}
+
+@code {
+    private List<TareaDTO> tareas = new();
+    private List<InquilinoViviendaDTO> viviendas = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+
+    private int viviendaSeleccionada = 0;
+    private string titulo = "";
+    private string descripcion = "";
+    private DateTime fechaProgramada = DateTime.Now;
+    private bool recurrente = false;
+    private int frecuenciaDias = 7;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarDatos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                var todas = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                viviendas = todas.Where(v => v.Activo).ToList();
+                tareas = await Http.GetFromJsonAsync<List<TareaDTO>>("api/tareascalendario") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar datos";
+        }
+        cargando = false;
+    }
+
+    private async Task CrearTarea()
+    {
+        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(titulo))
+        {
+            mensaje = "Selecciona vivienda y añade un título";
+            return;
+        }
+
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            var data = new
+            {
+                ViviendaId = viviendaSeleccionada,
+                Titulo = titulo,
+                Descripcion = descripcion,
+                FechaProgramada = fechaProgramada,
+                CreadaPorId = user.UsuarioId,
+                AsignadaAid = user.UsuarioId,
+                Recurrente = recurrente,
+                FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
+            };
+
+            var response = await Http.PostAsJsonAsync("api/tareascalendario", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Tarea creada";
+                mostrarForm = false;
+                titulo = "";
+                descripcion = "";
+                recurrente = false;
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al crear tarea";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al guardar";
+        }
+    }
+
+    private async Task CompletarTarea(int id)
+    {
+        try
+        {
+            var response = await Http.PatchAsync($"api/tareascalendario/{id}/completar", null);
+            mensaje = response.IsSuccessStatusCode ? "Tarea completada" : "Error al completar";
+            await CargarDatos();
+        }
+        catch
+        {
+            mensaje = "Error al completar tarea";
+        }
+    }
+}

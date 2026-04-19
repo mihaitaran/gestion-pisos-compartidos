@@ -17,7 +17,7 @@ public partial class Incidencia
 
     public string Prioridad { get; set; } = null!;
 
-    public string Estado { get; set; } = null!;
+    public string? Estado { get; set; }
 
     public DateTime FechaCreacion { get; set; }
 

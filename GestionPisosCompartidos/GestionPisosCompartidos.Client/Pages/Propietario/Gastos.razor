@@ -1,0 +1,211 @@
+﻿@page "/gastos"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Gastos</h2>
+
+<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+    @(mostrarForm ? "Cancelar" : "Registrar gasto")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>Nuevo gasto</h3>
+
+        <div class="form-group">
+            <label>Vivienda</label>
+            <select class="form-control" @bind="viviendaSeleccionada">
+                <option value="0">Selecciona vivienda</option>
+                @foreach (var v in viviendas)
+                {
+                    <option value="@v.Id">@v.Direccion - @v.Ciudad</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Concepto</label>
+            <input type="text" class="form-control" @bind="concepto" />
+        </div>
+
+        <div class="form-group">
+            <label>Categoría</label>
+            <select class="form-control" @bind="categoria">
+                <option value="">Selecciona categoría</option>
+                <option value="Alquiler">Alquiler</option>
+                <option value="Luz">Luz</option>
+                <option value="Agua">Agua</option>
+                <option value="Gas">Gas</option>
+                <option value="Internet">Internet</option>
+                <option value="Comunidad">Comunidad</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Importe total (€)</label>
+            <input type="number" step="0.01" class="form-control" @bind="importeTotal" />
+        </div>
+
+        <div class="form-group">
+            <label>Fecha del gasto</label>
+            <input type="date" class="form-control" @bind="fechaGasto" />
+        </div>
+
+        <button class="btn btn-success" @onclick="CrearGasto">Guardar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (gastos.Count == 0)
+{
+    <p>No hay gastos registrados.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Categoría</th>
+                <th>Importe</th>
+                <th>Fecha</th>
+                <th>Vivienda</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in gastos)
+            {
+                <tr>
+                    <td>@g.Concepto</td>
+                    <td>@g.Categoria</td>
+                    <td>@g.ImporteTotal.ToString("F2") €</td>
+                    <td>@g.FechaGasto</td>
+                    <td>@g.Vivienda?.Direccion - @g.Vivienda?.Ciudad</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarGasto(g.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<GastoDTO> gastos = new();
+    private List<ViviendaDTO> viviendas = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+
+    private int viviendaSeleccionada = 0;
+    private string concepto = "";
+    private string categoria = "";
+    private decimal importeTotal = 0;
+    private DateTime fechaGasto = DateTime.Today;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarDatos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+                gastos = await Http.GetFromJsonAsync<List<GastoDTO>>("api/gastos") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar datos";
+        }
+        cargando = false;
+    }
+
+    private async Task CrearGasto()
+    {
+        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(categoria))
+        {
+            mensaje = "Selecciona vivienda y categoría";
+            return;
+        }
+
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            var data = new
+            {
+                ViviendaId = viviendaSeleccionada,
+                Concepto = concepto,
+                Categoria = categoria,
+                ImporteTotal = importeTotal,
+                FechaGasto = fechaGasto.ToString("yyyy-MM-dd"),
+                CreadoPorId = user.UsuarioId
+            };
+
+            var response = await Http.PostAsJsonAsync("api/gastos", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Gasto registrado";
+                mostrarForm = false;
+                concepto = "";
+                categoria = "";
+                importeTotal = 0;
+                viviendaSeleccionada = 0;
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al crear el gasto";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al guardar";
+        }
+    }
+
+    private async Task EliminarGasto(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/gastos/{id}");
+            mensaje = response.IsSuccessStatusCode ? "Gasto eliminado" : "Error al eliminar";
+            await CargarDatos();
+        }
+        catch
+        {
+            mensaje = "Error al eliminar";
+        }
+    }
+}

@@ -1,0 +1,180 @@
+﻿@page "/mis-incidencias"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Mis incidencias</h2>
+
+<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+    @(mostrarForm ? "Cancelar" : "Reportar incidencia")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>Nueva incidencia</h3>
+
+        <div class="form-group">
+            <label>Vivienda</label>
+            <select class="form-control" @bind="viviendaSeleccionada">
+                <option value="0">Selecciona vivienda</option>
+                @foreach (var v in viviendas)
+                {
+                    <option value="@v.Vivienda?.Id">@v.Vivienda?.Direccion - @v.Vivienda?.Ciudad</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Título</label>
+            <input type="text" class="form-control" @bind="titulo" />
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea class="form-control" @bind="descripcion"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Prioridad</label>
+            <select class="form-control" @bind="prioridad">
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+            </select>
+        </div>
+
+        <button class="btn btn-success" @onclick="CrearIncidencia">Enviar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (incidencias.Count == 0)
+{
+    <p>No has reportado incidencias.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in incidencias)
+            {
+                <tr>
+                    <td>@i.Titulo</td>
+                    <td>@i.Prioridad</td>
+                    <td>@i.Estado</td>
+                    <td>@i.FechaCreacion</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<IncidenciaDTO> incidencias = new();
+    private List<InquilinoViviendaDTO> viviendas = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+
+    private int viviendaSeleccionada = 0;
+    private string titulo = "";
+    private string descripcion = "";
+    private string prioridad = "Media";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarDatos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                var todas = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                viviendas = todas.Where(v => v.Activo).ToList();
+                incidencias = await Http.GetFromJsonAsync<List<IncidenciaDTO>>("api/incidencias") ?? new();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar datos";
+        }
+        cargando = false;
+    }
+
+    private async Task CrearIncidencia()
+    {
+        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(titulo))
+        {
+            mensaje = "Selecciona vivienda y añade un título";
+            return;
+        }
+
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            var data = new
+            {
+                ViviendaId = viviendaSeleccionada,
+                ReportadaPorId = user.UsuarioId,
+                Titulo = titulo,
+                Descripcion = descripcion,
+                Prioridad = prioridad
+            };
+
+            var response = await Http.PostAsJsonAsync("api/incidencias", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Incidencia reportada";
+                mostrarForm = false;
+                titulo = "";
+                descripcion = "";
+                prioridad = "Media";
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al crear incidencia";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al enviar";
+        }
+    }
+}

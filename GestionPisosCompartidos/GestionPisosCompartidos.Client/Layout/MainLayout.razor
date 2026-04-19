@@ -1,16 +1,41 @@
 ﻿@inherits LayoutComponentBase
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <a href="/dashboard" class="brand">Gestión Pisos</a>
         </div>
+        <div class="top-bar-right">
+            @if (usuario != null)
+            {
+                <span>Hola, @usuario.Nombre (@usuario.Rol)</span>
+                <button class="btn btn-outline" @onclick="CerrarSesion">Cerrar sesión</button>
+            }
+        </div>
+    </header>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <main class="main-content">
+        @Body
     </main>
 </div>
+
+@code {
+    private GestionPisosCompartidos.Client.Services.UserData? usuario;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            usuario = await AuthService.GetUserAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CerrarSesion()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}
