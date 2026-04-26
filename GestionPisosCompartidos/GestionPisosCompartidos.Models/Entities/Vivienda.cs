@@ -21,6 +21,10 @@ public partial class Vivienda
 
     public DateTime FechaCreacion { get; set; }
 
+    public virtual ICollection<Habitacion> Habitaciones { get; set; } = new List<Habitacion>();
+
+    public virtual ICollection<Mensaje> Mensajes { get; set; } = new List<Mensaje>();
+
     public virtual ICollection<Gasto> Gastos { get; set; } = new List<Gasto>();
 
     public virtual ICollection<Incidencia> Incidencia { get; set; } = new List<Incidencia>();

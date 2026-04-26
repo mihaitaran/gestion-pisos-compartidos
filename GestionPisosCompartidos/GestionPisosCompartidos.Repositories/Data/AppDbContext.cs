@@ -21,6 +21,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<TareasCalendario> TareasCalendarios { get; set; }
     public virtual DbSet<Usuario> Usuarios { get; set; }
     public virtual DbSet<Vivienda> Viviendas { get; set; }
+    public virtual DbSet<Habitacion> Habitaciones { get; set; }
+    public virtual DbSet<Mensaje> Mensajes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +78,9 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Vivienda).WithMany(p => p.InquilinosVivienda)
                 .HasForeignKey(d => d.ViviendaId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Habitacion).WithMany(p => p.InquilinosVivienda)
+                .HasForeignKey(d => d.HabitacionId);
         });
 
         // GASTO
@@ -180,6 +185,38 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Vivienda).WithMany(p => p.TareasCalendarios)
                 .HasForeignKey(d => d.ViviendaId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // HABITACION
+        modelBuilder.Entity<Habitacion>(entity =>
+        {
+            entity.HasIndex(e => e.ViviendaId);
+
+            entity.Property(e => e.Numero).HasMaxLength(20);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.PrecioMensual).HasColumnType("decimal(10, 2)");
+
+            entity.HasOne(d => d.Vivienda).WithMany(p => p.Habitaciones)
+                .HasForeignKey(d => d.ViviendaId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        // MENSAJE
+        modelBuilder.Entity<Mensaje>(entity =>
+        {
+            entity.HasIndex(e => e.ViviendaId);
+            entity.HasIndex(e => e.EmisorId);
+
+            entity.Property(e => e.Contenido).HasMaxLength(2000);
+            entity.Property(e => e.FechaEnvio).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Vivienda).WithMany(p => p.Mensajes)
+                .HasForeignKey(d => d.ViviendaId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Emisor).WithMany(p => p.Mensajes)
+                .HasForeignKey(d => d.EmisorId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 

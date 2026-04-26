@@ -36,4 +36,6 @@ public partial class Usuario
     public virtual ICollection<TareasCalendario> TareasCalendarioCreadaPors { get; set; } = new List<TareasCalendario>();
 
     public virtual ICollection<Vivienda> Vivienda { get; set; } = new List<Vivienda>();
+
+    public virtual ICollection<Mensaje> Mensajes { get; set; } = new List<Mensaje>();
 }
