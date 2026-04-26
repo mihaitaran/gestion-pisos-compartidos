@@ -1,9 +1,21 @@
 ﻿@page "/"
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Navigation.NavigateTo("/login");
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (autenticado)
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Navigation.NavigateTo("/login");
+            }
+        }
     }
 }

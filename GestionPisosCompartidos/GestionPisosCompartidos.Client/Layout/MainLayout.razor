@@ -3,18 +3,21 @@
 @inject NavigationManager Navigation
 
 <div class="page">
-    <header class="top-bar">
-        <div class="top-bar-left">
-            <a href="/dashboard" class="brand">Gestión Pisos</a>
-        </div>
-        <div class="top-bar-right">
-            @if (usuario != null)
-            {
-                <span>Hola, @usuario.Nombre (@usuario.Rol)</span>
-                <button class="btn btn-outline" @onclick="CerrarSesion">Cerrar sesión</button>
-            }
-        </div>
-    </header>
+    @if (mostrarHeader)
+    {
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <a href="/dashboard" class="brand">Gestión Pisos</a>
+            </div>
+            <div class="top-bar-right">
+                @if (usuario != null)
+                {
+                    <span>Hola, @usuario.Nombre (@usuario.Rol)</span>
+                    <button class="btn btn-outline" @onclick="CerrarSesion">Cerrar sesión</button>
+                }
+            </div>
+        </header>
+    }
 
     <main class="main-content">
         @Body
@@ -23,19 +26,41 @@
 
 @code {
     private GestionPisosCompartidos.Client.Services.UserData? usuario;
+    private bool mostrarHeader = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            usuario = await AuthService.GetUserAsync();
-            StateHasChanged();
+            await ActualizarEstado();
         }
+    }
+
+    protected override void OnParametersSet()
+    {
+        var uri = Navigation.Uri.ToLower();
+        mostrarHeader = !uri.Contains("/login") && !uri.Contains("/register");
+    }
+
+    private async Task ActualizarEstado()
+    {
+        var uri = Navigation.Uri.ToLower();
+        mostrarHeader = !uri.Contains("/login") && !uri.Contains("/register");
+
+        if (mostrarHeader)
+        {
+            usuario = await AuthService.GetUserAsync();
+        }
+        else
+        {
+            usuario = null;
+        }
+        StateHasChanged();
     }
 
     private async Task CerrarSesion()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
 }

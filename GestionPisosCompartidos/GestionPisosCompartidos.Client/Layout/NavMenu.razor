@@ -1,38 +1,49 @@
 ﻿@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
 
-<div class="nav-menu">
-    <nav>
-        <a href="/dashboard">Dashboard</a>
+@if (mostrarMenu)
+{
+    <div class="nav-menu">
+        <nav>
+            <a href="/dashboard">Dashboard</a>
 
-        @if (rol == "Propietario")
-        {
-            <a href="/viviendas">Viviendas</a>
-            <a href="/gastos">Gastos</a>
-            <a href="/pagos">Pagos</a>
-            <a href="/incidencias">Incidencias</a>
-        }
-        else if (rol == "Inquilino")
-        {
-            <a href="/mis-pagos">Mis pagos</a>
-            <a href="/mis-incidencias">Incidencias</a>
-            <a href="/calendario">Calendario</a>
-        }
-    </nav>
-</div>
+            @if (rol == "Propietario")
+            {
+                <a href="/viviendas">Viviendas</a>
+                <a href="/gastos">Gastos</a>
+                <a href="/pagos">Pagos</a>
+                <a href="/incidencias">Incidencias</a>
+            }
+            else if (rol == "Inquilino")
+            {
+                <a href="/mis-pagos">Mis pagos</a>
+                <a href="/mis-incidencias">Incidencias</a>
+                <a href="/calendario">Calendario</a>
+            }
+        </nav>
+    </div>
+}
 
 @code {
     private string rol = "";
+    private bool mostrarMenu = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var user = await AuthService.GetUserAsync();
-            if (user != null)
+            var uri = Navigation.Uri.ToLower();
+            mostrarMenu = !uri.Contains("/login") && !uri.Contains("/register");
+
+            if (mostrarMenu)
             {
-                rol = user.Rol;
-                StateHasChanged();
+                var user = await AuthService.GetUserAsync();
+                if (user != null)
+                {
+                    rol = user.Rol;
+                }
             }
+            StateHasChanged();
         }
     }
 }
