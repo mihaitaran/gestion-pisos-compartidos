@@ -80,6 +80,7 @@ else
                         <button class="btn btn-sm btn-warning" @onclick="() => EditarVivienda(v)">Editar</button>
                         <button class="btn btn-sm btn-danger" @onclick="() => EliminarVivienda(v.Id)">Eliminar</button>
                         <button class="btn btn-sm btn-info" @onclick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/inquilinos")'>Inquilinos</button>
+                        <button class="btn btn-sm btn-secondary" @onclick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/habitaciones")'>Habitaciones</button>
                     </td>
                 </tr>
             }

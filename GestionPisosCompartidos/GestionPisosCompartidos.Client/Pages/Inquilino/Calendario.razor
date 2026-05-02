@@ -137,7 +137,14 @@ else
             {
                 var todas = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
                 viviendas = todas.Where(v => v.Activo).ToList();
-                tareas = await Http.GetFromJsonAsync<List<TareaDTO>>("api/tareascalendario") ?? new();
+
+                // Solo cargar tareas de las viviendas del inquilino
+                tareas = new();
+                foreach (var v in viviendas)
+                {
+                    var tareasVivienda = await Http.GetFromJsonAsync<List<TareaDTO>>($"api/tareascalendario/vivienda/{v.ViviendaId}") ?? new();
+                    tareas.AddRange(tareasVivienda);
+                }
             }
         }
         catch

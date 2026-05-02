@@ -1,0 +1,203 @@
+﻿@page "/viviendas/{ViviendaId:int}/habitaciones"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Habitaciones</h2>
+
+<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/viviendas")'>Volver</button>
+
+<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+    @(mostrarForm ? "Cancelar" : "Añadir habitación")
+</button>
+
+@if (mostrarForm)
+{
+    <div class="form-container">
+        <h3>@(habitacionEditando != null ? "Editar habitación" : "Nueva habitación")</h3>
+
+        <div class="form-group">
+            <label>Número / Nombre</label>
+            <input type="text" class="form-control" @bind="numero" />
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" @bind="tieneBano" /> Tiene baño
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <input type="text" class="form-control" @bind="descripcion" />
+        </div>
+
+        <div class="form-group">
+            <label>Precio mensual (€)</label>
+            <input type="number" step="0.01" class="form-control" @bind="precioMensual" />
+        </div>
+
+        <button class="btn btn-success" @onclick="GuardarHabitacion">Guardar</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (habitaciones.Count == 0)
+{
+    <p>No hay habitaciones registradas.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Baño</th>
+                <th>Descripción</th>
+                <th>Precio mensual</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in habitaciones)
+            {
+                <tr>
+                    <td>@h.Numero</td>
+                    <td>@(h.TieneBano ? "Sí" : "No")</td>
+                    <td>@h.Descripcion</td>
+                    <td>@(h.PrecioMensual?.ToString("F2") ?? "-") €</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => EditarHabitacion(h)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarHabitacion(h.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int ViviendaId { get; set; }
+
+    private List<HabitacionDTO> habitaciones = new();
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+    private HabitacionDTO? habitacionEditando = null;
+
+    private string numero = "";
+    private bool tieneBano = false;
+    private string descripcion = "";
+    private decimal precioMensual = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarHabitaciones();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarHabitaciones()
+    {
+        cargando = true;
+        try
+        {
+            habitaciones = await Http.GetFromJsonAsync<List<HabitacionDTO>>($"api/habitaciones/vivienda/{ViviendaId}") ?? new();
+        }
+        catch
+        {
+            mensaje = "Error al cargar habitaciones";
+        }
+        cargando = false;
+    }
+
+    private async Task GuardarHabitacion()
+    {
+        try
+        {
+            if (habitacionEditando != null)
+            {
+                var data = new
+                {
+                    Numero = numero,
+                    TieneBano = tieneBano,
+                    Descripcion = descripcion,
+                    PrecioMensual = precioMensual
+                };
+                var response = await Http.PutAsJsonAsync($"api/habitaciones/{habitacionEditando.Id}", data);
+                mensaje = response.IsSuccessStatusCode ? "Habitación actualizada" : "Error al actualizar";
+            }
+            else
+            {
+                var data = new
+                {
+                    ViviendaId = ViviendaId,
+                    Numero = numero,
+                    TieneBano = tieneBano,
+                    Descripcion = descripcion,
+                    PrecioMensual = precioMensual
+                };
+                var response = await Http.PostAsJsonAsync("api/habitaciones", data);
+                mensaje = response.IsSuccessStatusCode ? "Habitación creada" : "Error al crear";
+            }
+
+            mostrarForm = false;
+            LimpiarFormulario();
+            await CargarHabitaciones();
+        }
+        catch
+        {
+            mensaje = "Error al guardar";
+        }
+    }
+
+    private void EditarHabitacion(HabitacionDTO h)
+    {
+        habitacionEditando = h;
+        numero = h.Numero;
+        tieneBano = h.TieneBano;
+        descripcion = h.Descripcion ?? "";
+        precioMensual = h.PrecioMensual ?? 0;
+        mostrarForm = true;
+    }
+
+    private async Task EliminarHabitacion(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/habitaciones/{id}");
+            mensaje = response.IsSuccessStatusCode ? "Habitación eliminada" : "Error al eliminar";
+            await CargarHabitaciones();
+        }
+        catch
+        {
+            mensaje = "Error al eliminar";
+        }
+    }
+
+    private void LimpiarFormulario()
+    {
+        habitacionEditando = null;
+        numero = "";
+        tieneBano = false;
+        descripcion = "";
+        precioMensual = 0;
+    }
+}

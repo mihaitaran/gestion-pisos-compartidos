@@ -36,7 +36,9 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             return await _context.Gastos
                 .Where(g => g.ViviendaId == viviendaId)
                 .Include(g => g.CreadoPor)
+                .Include(g => g.Vivienda)
                 .Include(g => g.Pagos)
+                    .ThenInclude(p => p.Inquilino)
                 .ToListAsync();
         }
 
@@ -63,9 +65,11 @@ namespace GestionPisosCompartidos.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var gasto = await _context.Gastos.FindAsync(id);
+            var gasto = await _context.Gastos
+                .Include(g => g.Pagos)
+                .FirstOrDefaultAsync(g => g.Id == id);
             if (gasto == null) return false;
-
+            _context.Pagos.RemoveRange(gasto.Pagos);
             _context.Gastos.Remove(gasto);
             await _context.SaveChangesAsync();
             return true;

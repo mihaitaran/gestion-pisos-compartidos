@@ -115,7 +115,20 @@ else
             }
             else
             {
-                pagos = await Http.GetFromJsonAsync<List<PagoDTO>>("api/pagos") ?? new();
+                pagos = new();
+                foreach (var v in viviendas)
+                {
+                    var gastos = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                    pagos.AddRange(gastos.SelectMany(g => g.Pagos.Select(p => new PagoDTO
+                    {
+                        Id = p.Id,
+                        Importe = p.Importe,
+                        Estado = p.Estado,
+                        FechaPago = p.FechaPago,
+                        Inquilino = p.Inquilino,
+                        Gasto = new GastoDTO { Concepto = g.Concepto, Categoria = g.Categoria }
+                    })));
+                }
             }
         }
         catch

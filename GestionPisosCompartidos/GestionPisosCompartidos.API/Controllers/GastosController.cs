@@ -1,4 +1,5 @@
-﻿using GestionPisosCompartidos.Models.Entities;
+﻿using GestionPisosCompartidos.Models.DTOs;
+using GestionPisosCompartidos.Models.Entities;
 using GestionPisosCompartidos.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,9 +39,19 @@ namespace GestionPisosCompartidos.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Gasto>> Create(Gasto gasto)
+        public async Task<ActionResult<Gasto>> Create(CrearGastoDTO dto)
         {
-            var created = await _service.CreateAsync(gasto);
+            var gasto = new Gasto
+            {
+                ViviendaId = dto.ViviendaId,
+                Concepto = dto.Concepto,
+                Categoria = dto.Categoria,
+                ImporteTotal = dto.ImporteTotal,
+                FechaGasto = DateOnly.Parse(dto.FechaGasto),
+                CreadoPorId = dto.CreadoPorId
+            };
+
+            var created = await _service.CreateAsync(gasto, dto.InquilinosIds);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 

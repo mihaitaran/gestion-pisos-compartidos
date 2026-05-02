@@ -86,7 +86,18 @@ else
         cargando = true;
         try
         {
-            incidencias = await Http.GetFromJsonAsync<List<IncidenciaDTO>>("api/incidencias") ?? new();
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                var viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+
+                incidencias = new();
+                foreach (var v in viviendas)
+                {
+                    var incidenciasVivienda = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{v.Id}") ?? new();
+                    incidencias.AddRange(incidenciasVivienda);
+                }
+            }
         }
         catch
         {

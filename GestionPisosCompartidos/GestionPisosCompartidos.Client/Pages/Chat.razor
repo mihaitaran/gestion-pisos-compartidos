@@ -1,0 +1,160 @@
+﻿@page "/chat"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Chat de la vivienda</h2>
+
+<div class="form-group">
+    <label>Selecciona vivienda</label>
+    <select class="form-control" @bind="viviendaSeleccionada" @bind:after="CargarMensajes">
+        <option value="0">Selecciona vivienda</option>
+        @foreach (var v in viviendas)
+        {
+            <option value="@v.Id">@v.Direccion - @v.Ciudad</option>
+        }
+    </select>
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info">@mensaje</div>
+}
+
+@if (viviendaSeleccionada > 0)
+{
+    <div class="chat-container">
+        @if (mensajes.Count == 0)
+        {
+            <p>No hay mensajes aún. ¡Empieza la conversación!</p>
+        }
+        else
+        {
+            @foreach (var m in mensajes)
+            {
+                <div class="chat-mensaje @(m.EmisorId == usuarioId ? "chat-propio" : "chat-otro")">
+                    <div class="chat-autor">@m.Emisor?.Nombre @m.Emisor?.Apellidos</div>
+                    <div class="chat-contenido">@m.Contenido</div>
+                    <div class="chat-fecha">@m.FechaEnvio</div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="chat-input">
+        <input type="text" class="form-control" @bind="nuevoMensaje"
+               @onkeydown="EnviarConEnter" placeholder="Escribe un mensaje..." />
+        <button class="btn btn-primary" @onclick="EnviarMensaje">Enviar</button>
+    </div>
+}
+
+@code {
+    private List<MensajeDTO> mensajes = new();
+    private List<ViviendaDTO> viviendas = new();
+    private int viviendaSeleccionada = 0;
+    private int usuarioId = 0;
+    private string nuevoMensaje = "";
+    private string mensaje = "";
+    private string rol = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarViviendas();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarViviendas()
+    {
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            usuarioId = user.UsuarioId;
+            rol = user.Rol;
+
+            if (rol == "Propietario")
+            {
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+            }
+            else
+            {
+                var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                viviendas = asignaciones
+                    .Where(a => a.Activo && a.Vivienda != null)
+                    .Select(a => a.Vivienda!)
+                    .ToList();
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar viviendas";
+        }
+    }
+
+    private async Task CargarMensajes()
+    {
+        if (viviendaSeleccionada == 0)
+        {
+            mensajes = new();
+            return;
+        }
+
+        try
+        {
+            mensajes = await Http.GetFromJsonAsync<List<MensajeDTO>>($"api/mensajes/vivienda/{viviendaSeleccionada}") ?? new();
+        }
+        catch
+        {
+            mensaje = "Error al cargar mensajes";
+        }
+    }
+
+    private async Task EnviarMensaje()
+    {
+        if (string.IsNullOrEmpty(nuevoMensaje) || viviendaSeleccionada == 0) return;
+
+        try
+        {
+            var data = new
+            {
+                ViviendaId = viviendaSeleccionada,
+                EmisorId = usuarioId,
+                Contenido = nuevoMensaje
+            };
+
+            var response = await Http.PostAsJsonAsync("api/mensajes", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                nuevoMensaje = "";
+                await CargarMensajes();
+            }
+            else
+            {
+                mensaje = "Error al enviar mensaje";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al enviar";
+        }
+    }
+
+    private async Task EnviarConEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await EnviarMensaje();
+        }
+    }
+}

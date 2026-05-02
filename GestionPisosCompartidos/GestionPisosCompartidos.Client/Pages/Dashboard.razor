@@ -25,6 +25,10 @@
                 <h3>Incidencias</h3>
                 <p>Revisa las incidencias</p>
             </div>
+            <div class="card" @onclick='() => Navigation.NavigateTo("/chat")'>
+                <h3>Chat</h3>
+                <p>Comunícate con tus inquilinos</p>
+            </div>
         </div>
     }
     else
@@ -34,6 +38,10 @@
                 <h3>Mis pagos</h3>
                 <p>Consulta tus pagos pendientes</p>
             </div>
+            <div class="card" @onclick='() => Navigation.NavigateTo("/gastos")'>
+                <h3>Gastos</h3>
+                <p>Registra gastos compartidos</p>
+            </div>
             <div class="card" @onclick='() => Navigation.NavigateTo("/mis-incidencias")'>
                 <h3>Incidencias</h3>
                 <p>Reporta y consulta incidencias</p>
@@ -41,6 +49,10 @@
             <div class="card" @onclick='() => Navigation.NavigateTo("/calendario")'>
                 <h3>Calendario</h3>
                 <p>Tareas y limpieza</p>
+            </div>
+            <div class="card" @onclick='() => Navigation.NavigateTo("/chat")'>
+                <h3>Chat</h3>
+                <p>Comunícate con tus compañeros</p>
             </div>
         </div>
     }

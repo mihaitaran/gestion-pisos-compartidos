@@ -20,12 +20,24 @@ namespace GestionPisosCompartidos.Services.Implementations
             _pagoRepository = pagoRepository;
         }
 
-        public async Task<Gasto> CreateAsync(Gasto gasto)
+        public async Task<Gasto> CreateAsync(Gasto gasto, List<int>? inquilinosIds = null)
         {
             gasto.FechaRegistro = DateTime.UtcNow;
             var gastoCreado = await _repository.CreateAsync(gasto);
 
-            var inquilinos = await _inquilinoViviendaRepository.GetActivosByViviendaIdAsync(gasto.ViviendaId);
+            List<InquilinosVivienda> inquilinos;
+
+            if (inquilinosIds != null && inquilinosIds.Count > 0)
+            {
+                // Usar los inquilinos seleccionados
+                var todosInquilinos = await _inquilinoViviendaRepository.GetActivosByViviendaIdAsync(gasto.ViviendaId);
+                inquilinos = todosInquilinos.Where(iv => inquilinosIds.Contains(iv.InquilinoId)).ToList();
+            }
+            else
+            {
+                // Repartir entre todos los inquilinos activos
+                inquilinos = await _inquilinoViviendaRepository.GetActivosByViviendaIdAsync(gasto.ViviendaId);
+            }
 
             if (inquilinos.Count > 0)
             {

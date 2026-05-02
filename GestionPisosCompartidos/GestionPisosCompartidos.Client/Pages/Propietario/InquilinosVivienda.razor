@@ -21,6 +21,17 @@
             <input type="email" class="form-control" @bind="emailInquilino" />
         </div>
 
+        <div class="form-group">
+            <label>Habitación (opcional)</label>
+            <select class="form-control" @bind="habitacionSeleccionada">
+                <option value="0">Sin habitación asignada</option>
+                @foreach (var h in habitaciones)
+                {
+                    <option value="@h.Id">@h.Numero - @(h.TieneBano ? "Con baño" : "Sin baño") - @(h.PrecioMensual?.ToString("F2") ?? "0") €</option>
+                }
+            </select>
+        </div>
+
         <button class="btn btn-success" @onclick="AsignarInquilino">Asignar</button>
     </div>
 }
@@ -45,6 +56,7 @@ else
             <tr>
                 <th>Nombre</th>
                 <th>Email</th>
+                <th>Habitación</th>
                 <th>Fecha inicio</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -56,6 +68,7 @@ else
                 <tr>
                     <td>@iv.Inquilino?.Nombre @iv.Inquilino?.Apellidos</td>
                     <td>@iv.Inquilino?.Email</td>
+                    <td>@(iv.Habitacion?.Numero ?? "Sin asignar")</td>
                     <td>@iv.FechaInicio</td>
                     <td>@(iv.Activo ? "Activo" : "Inactivo")</td>
                     <td>
@@ -75,9 +88,11 @@ else
     public int ViviendaId { get; set; }
 
     private List<InquilinoViviendaDTO> inquilinos = new();
+    private List<HabitacionDTO> habitaciones = new();
     private bool cargando = true;
     private bool mostrarForm = false;
     private string emailInquilino = "";
+    private int habitacionSeleccionada = 0;
     private string mensaje = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -90,21 +105,22 @@ else
                 Navigation.NavigateTo("/login");
                 return;
             }
-            await CargarInquilinos();
+            await CargarDatos();
             StateHasChanged();
         }
     }
 
-    private async Task CargarInquilinos()
+    private async Task CargarDatos()
     {
         cargando = true;
         try
         {
             inquilinos = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/vivienda/{ViviendaId}") ?? new();
+            habitaciones = await Http.GetFromJsonAsync<List<HabitacionDTO>>($"api/habitaciones/vivienda/{ViviendaId}") ?? new();
         }
         catch
         {
-            mensaje = "Error al cargar inquilinos";
+            mensaje = "Error al cargar datos";
         }
         cargando = false;
     }
@@ -125,14 +141,16 @@ else
             var data = new
             {
                 InquilinoId = inquilino.Id,
-                ViviendaId = ViviendaId
+                ViviendaId = ViviendaId,
+                HabitacionId = habitacionSeleccionada > 0 ? habitacionSeleccionada : (int?)null
             };
 
             var response = await Http.PostAsJsonAsync("api/inquilinosviviendas", data);
             mensaje = response.IsSuccessStatusCode ? "Inquilino asignado" : "Error al asignar";
             mostrarForm = false;
             emailInquilino = "";
-            await CargarInquilinos();
+            habitacionSeleccionada = 0;
+            await CargarDatos();
         }
         catch
         {
@@ -146,7 +164,7 @@ else
         {
             var response = await Http.PatchAsync($"api/inquilinosviviendas/{id}/desactivar", null);
             mensaje = response.IsSuccessStatusCode ? "Inquilino desactivado" : "Error al desactivar";
-            await CargarInquilinos();
+            await CargarDatos();
         }
         catch
         {
