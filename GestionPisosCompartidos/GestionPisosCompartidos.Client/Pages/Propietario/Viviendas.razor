@@ -3,89 +3,78 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Mis viviendas</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Mis viviendas</MudText>
 
-<button class="btn btn-primary" @onclick="MostrarFormulario">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+           OnClick="MostrarFormulario" Class="mb-4">
     @(mostrarForm ? "Cancelar" : "Añadir vivienda")
-</button>
+</MudButton>
 
 @if (mostrarForm)
 {
-    <div class="form-container">
-        <h3>@(viviendaEditando != null ? "Editar vivienda" : "Nueva vivienda")</h3>
+    <MudCard Class="mb-4 pa-4">
+        <MudCardContent>
+            <MudText Typo="Typo.h6" Class="mb-3">@(viviendaEditando != null ? "Editar vivienda" : "Nueva vivienda")</MudText>
 
-        <div class="form-group">
-            <label>Dirección</label>
-            <input type="text" class="form-control" @bind="direccion" />
-        </div>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="direccion" Label="Dirección" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="ciudad" Label="Ciudad" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="codigoPostal" Label="Código postal" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField @bind-Value="numHabitaciones" Label="Nº Habitaciones" Variant="Variant.Outlined" Min="1" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="descripcion" Label="Descripción" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
 
-        <div class="form-group">
-            <label>Ciudad</label>
-            <input type="text" class="form-control" @bind="ciudad" />
-        </div>
-
-        <div class="form-group">
-            <label>Código postal</label>
-            <input type="text" class="form-control" @bind="codigoPostal" />
-        </div>
-
-        <div class="form-group">
-            <label>Descripción</label>
-            <input type="text" class="form-control" @bind="descripcion" />
-        </div>
-
-        <div class="form-group">
-            <label>Nº Habitaciones</label>
-            <input type="number" class="form-control" @bind="numHabitaciones" />
-        </div>
-
-        <button class="btn btn-success" @onclick="GuardarVivienda">Guardar</button>
-    </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="GuardarVivienda" Class="mt-3">Guardar</MudButton>
+        </MudCardContent>
+    </MudCard>
 }
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (viviendas.Count == 0)
 {
-    <p>No tienes viviendas registradas.</p>
+    <MudAlert Severity="Severity.Normal">No tienes viviendas registradas.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Dirección</th>
-                <th>Ciudad</th>
-                <th>C.P.</th>
-                <th>Habitaciones</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var v in viviendas)
-            {
-                <tr>
-                    <td>@v.Direccion</td>
-                    <td>@v.Ciudad</td>
-                    <td>@v.CodigoPostal</td>
-                    <td>@v.NumHabitaciones</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning" @onclick="() => EditarVivienda(v)">Editar</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarVivienda(v.Id)">Eliminar</button>
-                        <button class="btn btn-sm btn-info" @onclick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/inquilinos")'>Inquilinos</button>
-                        <button class="btn btn-sm btn-secondary" @onclick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/habitaciones")'>Habitaciones</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@viviendas" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Dirección</MudTh>
+            <MudTh>Ciudad</MudTh>
+            <MudTh>C.P.</MudTh>
+            <MudTh>Habitaciones</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Direccion</MudTd>
+            <MudTd>@context.Ciudad</MudTd>
+            <MudTd>@context.CodigoPostal</MudTd>
+            <MudTd>@context.NumHabitaciones</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarVivienda(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarVivienda(context.Id)" />
+                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Info" OnClick='() => Navigation.NavigateTo($"/viviendas/{context.Id}/inquilinos")'>Inquilinos</MudButton>
+                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary" OnClick='() => Navigation.NavigateTo($"/viviendas/{context.Id}/habitaciones")'>Habitaciones</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {

@@ -4,57 +4,115 @@
 
 @if (usuario != null)
 {
-    <h2>Bienvenido, @usuario.Nombre</h2>
+    <MudText Typo="Typo.h4" Class="mb-6">Bienvenido, @usuario.Nombre</MudText>
 
     @if (usuario.Rol == "Propietario")
     {
-        <div class="dashboard-cards">
-            <div class="card" @onclick='() => Navigation.NavigateTo("/viviendas")'>
-                <h3>Mis viviendas</h3>
-                <p>Gestiona tus pisos</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/gastos")'>
-                <h3>Gastos</h3>
-                <p>Registra y reparte gastos</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/pagos")'>
-                <h3>Pagos</h3>
-                <p>Consulta el estado de pagos</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/incidencias")'>
-                <h3>Incidencias</h3>
-                <p>Revisa las incidencias</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/chat")'>
-                <h3>Chat</h3>
-                <p>Comunícate con tus inquilinos</p>
-            </div>
-        </div>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/viviendas")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Home" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Mis viviendas</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Gestiona tus pisos</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/gastos")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Gastos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Registra y reparte gastos</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/pagos")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Payment" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Pagos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Consulta el estado de pagos</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/incidencias")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Incidencias</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Revisa las incidencias</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/chat")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Info" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Chat</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Comunícate con tus inquilinos</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     }
     else
     {
-        <div class="dashboard-cards">
-            <div class="card" @onclick='() => Navigation.NavigateTo("/mis-pagos")'>
-                <h3>Mis pagos</h3>
-                <p>Consulta tus pagos pendientes</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/gastos")'>
-                <h3>Gastos</h3>
-                <p>Registra gastos compartidos</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/mis-incidencias")'>
-                <h3>Incidencias</h3>
-                <p>Reporta y consulta incidencias</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/calendario")'>
-                <h3>Calendario</h3>
-                <p>Tareas y limpieza</p>
-            </div>
-            <div class="card" @onclick='() => Navigation.NavigateTo("/chat")'>
-                <h3>Chat</h3>
-                <p>Comunícate con tus compañeros</p>
-            </div>
-        </div>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/gastos")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Gastos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Registra gastos compartidos</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/mis-pagos")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Payment" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Mis pagos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Consulta tus pagos pendientes</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/mis-incidencias")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Incidencias</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Reporta y consulta incidencias</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/calendario")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Calendario</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Tareas y limpieza</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="dashboard-card" @onclick='() => Navigation.NavigateTo("/chat")'>
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Info" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Chat</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Comunícate con tus compañeros</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
     }
 }
 

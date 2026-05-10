@@ -3,62 +3,58 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Incidencias</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Incidencias</MudText>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (incidencias.Count == 0)
 {
-    <p>No hay incidencias registradas.</p>
+    <MudAlert Severity="Severity.Normal">No hay incidencias registradas.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Vivienda</th>
-                <th>Reportada por</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var i in incidencias)
-            {
-                <tr>
-                    <td>@i.Titulo</td>
-                    <td>@i.Vivienda?.Direccion - @i.Vivienda?.Ciudad</td>
-                    <td>@i.ReportadaPor?.Nombre @i.ReportadaPor?.Apellidos</td>
-                    <td>@i.Prioridad</td>
-                    <td>@i.Estado</td>
-                    <td>@i.FechaCreacion</td>
-                    <td>
-                        @if (i.Estado != "Resuelta" && i.Estado != "Cerrada")
-                        {
-                            <select class="form-control form-control-sm"
-                                    @onchange="(e) => CambiarEstado(i.Id, e.Value?.ToString() ?? string.Empty)">
-                                <option value="">Cambiar estado</option>
-                                <option value="Abierta">Abierta</option>
-                                <option value="EnProceso">En proceso</option>
-                                <option value="Resuelta">Resuelta</option>
-                                <option value="Cerrada">Cerrada</option>
-                            </select>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@incidencias" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Título</MudTh>
+            <MudTh>Vivienda</MudTh>
+            <MudTh>Reportada por</MudTh>
+            <MudTh>Prioridad</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Titulo</MudTd>
+            <MudTd>@context.Vivienda?.Direccion</MudTd>
+            <MudTd>@context.ReportadaPor?.Nombre @context.ReportadaPor?.Apellidos</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado ?? "")">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>@context.FechaCreacion</MudTd>
+            <MudTd>
+                @if (context.Estado != "Resuelta" && context.Estado != "Cerrada")
+                {
+                    <MudSelect T="string" Label="Cambiar" Variant="Variant.Outlined" Dense="true"
+                               ValueChanged="@((string val) => CambiarEstado(context.Id, val))">
+                        <MudSelectItem Value="@("Abierta")">Abierta</MudSelectItem>
+                        <MudSelectItem Value="@("EnProceso")">En proceso</MudSelectItem>
+                        <MudSelectItem Value="@("Resuelta")">Resuelta</MudSelectItem>
+                        <MudSelectItem Value="@("Cerrada")">Cerrada</MudSelectItem>
+                    </MudSelect>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
@@ -90,12 +86,11 @@ else
             if (user != null)
             {
                 var viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
-
                 incidencias = new();
                 foreach (var v in viviendas)
                 {
-                    var incidenciasVivienda = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{v.Id}") ?? new();
-                    incidencias.AddRange(incidenciasVivienda);
+                    var inc = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{v.Id}") ?? new();
+                    incidencias.AddRange(inc);
                 }
             }
         }
@@ -109,7 +104,6 @@ else
     private async Task CambiarEstado(int id, string nuevoEstado)
     {
         if (string.IsNullOrEmpty(nuevoEstado)) return;
-
         try
         {
             var response = await Http.PatchAsJsonAsync($"api/incidencias/{id}/estado", nuevoEstado);
@@ -120,5 +114,29 @@ else
         {
             mensaje = "Error al cambiar estado";
         }
+    }
+
+    private Color GetPrioridadColor(string prioridad)
+    {
+        return prioridad switch
+        {
+            "Baja" => Color.Info,
+            "Media" => Color.Warning,
+            "Alta" => Color.Error,
+            "Urgente" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetEstadoColor(string estado)
+    {
+        return estado switch
+        {
+            "Abierta" => Color.Error,
+            "EnProceso" => Color.Warning,
+            "Resuelta" => Color.Success,
+            "Cerrada" => Color.Default,
+            _ => Color.Default
+        };
     }
 }

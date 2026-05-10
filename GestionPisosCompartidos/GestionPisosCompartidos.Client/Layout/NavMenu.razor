@@ -1,52 +1,44 @@
 ﻿@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-@if (mostrarMenu)
-{
-    <div class="nav-menu">
-        <nav>
-            <a href="/dashboard">Dashboard</a>
+<MudNavMenu>
+    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
 
-            @if (rol == "Propietario")
-            {
-                <a href="/viviendas">Viviendas</a>
-                <a href="/gastos">Gastos</a>
-                <a href="/pagos">Pagos</a>
-                <a href="/incidencias">Incidencias</a>
-                <a href="/chat">Chat</a>
-            }
-            else if (rol == "Inquilino")
-            {
-                <a href="/mis-pagos">Mis pagos</a>
-                <a href="/gastos">Gastos</a>
-                <a href="/mis-incidencias">Incidencias</a>
-                <a href="/calendario">Calendario</a>
-                <a href="/chat">Chat</a>
-            }
-        </nav>
-    </div>
-}
+    @if (rol == "Propietario")
+    {
+        <MudNavLink Href="/viviendas" Icon="@Icons.Material.Filled.Home">Viviendas</MudNavLink>
+        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
+        <MudNavLink Href="/pagos" Icon="@Icons.Material.Filled.Payment">Pagos</MudNavLink>
+        <MudNavLink Href="/incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
+        <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
+    }
+    else if (rol == "Inquilino")
+    {
+        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
+        <MudNavLink Href="/mis-pagos" Icon="@Icons.Material.Filled.Payment">Mis pagos</MudNavLink>
+        <MudNavLink Href="/mis-incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
+        <MudNavLink Href="/calendario" Icon="@Icons.Material.Filled.CalendarMonth">Calendario</MudNavLink>
+        <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
+    }
+</MudNavMenu>
 
 @code {
     private string rol = "";
-    private bool mostrarMenu = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             var uri = Navigation.Uri.ToLower();
-            mostrarMenu = !uri.Contains("/login") && !uri.Contains("/register");
-
-            if (mostrarMenu)
+            if (!uri.Contains("/login") && !uri.Contains("/register"))
             {
                 var user = await AuthService.GetUserAsync();
                 if (user != null)
                 {
                     rol = user.Rol;
+                    StateHasChanged();
                 }
             }
-            StateHasChanged();
         }
     }
 }

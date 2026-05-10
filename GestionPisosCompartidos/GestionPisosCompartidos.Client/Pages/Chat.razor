@@ -3,58 +3,80 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Chat de la vivienda</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Chat de la vivienda</MudText>
 
-<div class="form-group">
-    <label>Selecciona vivienda</label>
-    <select class="form-control" @bind="viviendaSeleccionada" @bind:after="CargarMensajes">
-        <option value="0">Selecciona vivienda</option>
+@if (rol == "Propietario")
+{
+    <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined"
+               Class="mb-4" Style="max-width: 400px;"
+               ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarMensajes(); })">
+        <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
         @foreach (var v in viviendas)
         {
-            <option value="@v.Id">@v.Direccion - @v.Ciudad</option>
+            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
         }
-    </select>
-</div>
-
-@if (!string.IsNullOrEmpty(mensaje))
+    </MudSelect>
+}
+else if (viviendaActiva != null)
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+    </MudAlert>
+}
+
+@if (!string.IsNullOrEmpty(mensajeAlerta))
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">@mensajeAlerta</MudAlert>
 }
 
 @if (viviendaSeleccionada > 0)
 {
-    <div class="chat-container">
+    <MudPaper Class="chat-container pa-4 mb-4" Elevation="2" Style="max-height: 500px; overflow-y: auto;">
         @if (mensajes.Count == 0)
         {
-            <p>No hay mensajes aún. ¡Empieza la conversación!</p>
+            <MudText Align="Align.Center" Color="Color.Secondary">No hay mensajes aún. ¡Empieza la conversación!</MudText>
         }
         else
         {
             @foreach (var m in mensajes)
             {
-                <div class="chat-mensaje @(m.EmisorId == usuarioId ? "chat-propio" : "chat-otro")">
-                    <div class="chat-autor">@m.Emisor?.Nombre @m.Emisor?.Apellidos</div>
-                    <div class="chat-contenido">@m.Contenido</div>
-                    <div class="chat-fecha">@m.FechaEnvio</div>
+                <div class="d-flex @(m.EmisorId == usuarioId ? "justify-end" : "justify-start") mb-2">
+                    <MudPaper Class="pa-3" Elevation="1" Style="@($"max-width: 70%; {(m.EmisorId == usuarioId ? "background-color: #E3F2FD;" : "")}")">
+                        <MudText Typo="Typo.caption" Color="Color.Primary">
+                            <b>@m.Emisor?.Nombre @m.Emisor?.Apellidos</b>
+                        </MudText>
+                        <MudText Typo="Typo.body1">@m.Contenido</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@m.FechaEnvio</MudText>
+                    </MudPaper>
                 </div>
             }
         }
-    </div>
+    </MudPaper>
 
-    <div class="chat-input">
-        <input type="text" class="form-control" @bind="nuevoMensaje"
-               @onkeydown="EnviarConEnter" placeholder="Escribe un mensaje..." />
-        <button class="btn btn-primary" @onclick="EnviarMensaje">Enviar</button>
-    </div>
+    <MudGrid>
+        <MudItem xs="10">
+            <MudTextField @bind-Value="nuevoMensaje" Label="Escribe un mensaje..." Variant="Variant.Outlined"
+                          OnKeyDown="EnviarConEnter" />
+        </MudItem>
+        <MudItem xs="2" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Send" OnClick="EnviarMensaje">Enviar</MudButton>
+        </MudItem>
+    </MudGrid>
+}
+else if (rol == "Inquilino" && viviendaActiva == null)
+{
+    <MudAlert Severity="Severity.Warning">No tienes una vivienda asignada.</MudAlert>
 }
 
 @code {
     private List<MensajeDTO> mensajes = new();
     private List<ViviendaDTO> viviendas = new();
+    private ViviendaDTO? viviendaActiva = null;
     private int viviendaSeleccionada = 0;
     private int usuarioId = 0;
     private string nuevoMensaje = "";
-    private string mensaje = "";
+    private string mensajeAlerta = "";
     private string rol = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,25 +111,25 @@
             else
             {
                 var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
-                viviendas = asignaciones
-                    .Where(a => a.Activo && a.Vivienda != null)
-                    .Select(a => a.Vivienda!)
-                    .ToList();
+                var activa = asignaciones.FirstOrDefault(a => a.Activo);
+
+                if (activa?.Vivienda != null)
+                {
+                    viviendaActiva = activa.Vivienda;
+                    viviendaSeleccionada = activa.ViviendaId;
+                    await CargarMensajes();
+                }
             }
         }
         catch
         {
-            mensaje = "Error al cargar viviendas";
+            mensajeAlerta = "Error al cargar viviendas";
         }
     }
 
     private async Task CargarMensajes()
     {
-        if (viviendaSeleccionada == 0)
-        {
-            mensajes = new();
-            return;
-        }
+        if (viviendaSeleccionada == 0) { mensajes = new(); return; }
 
         try
         {
@@ -115,7 +137,7 @@
         }
         catch
         {
-            mensaje = "Error al cargar mensajes";
+            mensajeAlerta = "Error al cargar mensajes";
         }
     }
 
@@ -125,13 +147,7 @@
 
         try
         {
-            var data = new
-            {
-                ViviendaId = viviendaSeleccionada,
-                EmisorId = usuarioId,
-                Contenido = nuevoMensaje
-            };
-
+            var data = new { ViviendaId = viviendaSeleccionada, EmisorId = usuarioId, Contenido = nuevoMensaje };
             var response = await Http.PostAsJsonAsync("api/mensajes", data);
 
             if (response.IsSuccessStatusCode)
@@ -141,20 +157,17 @@
             }
             else
             {
-                mensaje = "Error al enviar mensaje";
+                mensajeAlerta = "Error al enviar mensaje";
             }
         }
         catch
         {
-            mensaje = "Error al enviar";
+            mensajeAlerta = "Error al enviar";
         }
     }
 
     private async Task EnviarConEnter(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter")
-        {
-            await EnviarMensaje();
-        }
+        if (e.Key == "Enter") await EnviarMensaje();
     }
 }

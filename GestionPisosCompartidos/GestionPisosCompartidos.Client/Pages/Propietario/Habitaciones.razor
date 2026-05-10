@@ -3,85 +3,79 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Habitaciones</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Habitaciones</MudText>
 
-<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/viviendas")'>Volver</button>
+<MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.ArrowBack"
+           OnClick='() => Navigation.NavigateTo("/viviendas")' Class="mr-2 mb-4">Volver</MudButton>
 
-<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
     @(mostrarForm ? "Cancelar" : "Añadir habitación")
-</button>
+</MudButton>
 
 @if (mostrarForm)
 {
-    <div class="form-container">
-        <h3>@(habitacionEditando != null ? "Editar habitación" : "Nueva habitación")</h3>
+    <MudCard Class="mb-4 pa-4">
+        <MudCardContent>
+            <MudText Typo="Typo.h6" Class="mb-3">@(habitacionEditando != null ? "Editar habitación" : "Nueva habitación")</MudText>
 
-        <div class="form-group">
-            <label>Número / Nombre</label>
-            <input type="text" class="form-control" @bind="numero" />
-        </div>
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="numero" Label="Número / Nombre" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField @bind-Value="precioMensual" Label="Precio mensual (€)" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudCheckBox @bind-Value="tieneBano" Label="Tiene baño" Color="Color.Primary" Class="mt-3" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="descripcion" Label="Descripción" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
 
-        <div class="form-group">
-            <label>
-                <input type="checkbox" @bind="tieneBano" /> Tiene baño
-            </label>
-        </div>
-
-        <div class="form-group">
-            <label>Descripción</label>
-            <input type="text" class="form-control" @bind="descripcion" />
-        </div>
-
-        <div class="form-group">
-            <label>Precio mensual (€)</label>
-            <input type="number" step="0.01" class="form-control" @bind="precioMensual" />
-        </div>
-
-        <button class="btn btn-success" @onclick="GuardarHabitacion">Guardar</button>
-    </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="GuardarHabitacion" Class="mt-3">Guardar</MudButton>
+        </MudCardContent>
+    </MudCard>
 }
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (habitaciones.Count == 0)
 {
-    <p>No hay habitaciones registradas.</p>
+    <MudAlert Severity="Severity.Normal">No hay habitaciones registradas.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Número</th>
-                <th>Baño</th>
-                <th>Descripción</th>
-                <th>Precio mensual</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var h in habitaciones)
-            {
-                <tr>
-                    <td>@h.Numero</td>
-                    <td>@(h.TieneBano ? "Sí" : "No")</td>
-                    <td>@h.Descripcion</td>
-                    <td>@(h.PrecioMensual?.ToString("F2") ?? "-") €</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning" @onclick="() => EditarHabitacion(h)">Editar</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarHabitacion(h.Id)">Eliminar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@habitaciones" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Número</MudTh>
+            <MudTh>Baño</MudTh>
+            <MudTh>Descripción</MudTh>
+            <MudTh>Precio mensual</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Numero</MudTd>
+            <MudTd>
+                <MudIcon Icon="@(context.TieneBano ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                         Color="@(context.TieneBano ? Color.Success : Color.Error)" Size="Size.Small" />
+            </MudTd>
+            <MudTd>@context.Descripcion</MudTd>
+            <MudTd>@(context.PrecioMensual?.ToString("F2") ?? "-") €</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarHabitacion(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarHabitacion(context.Id)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
@@ -134,26 +128,13 @@ else
         {
             if (habitacionEditando != null)
             {
-                var data = new
-                {
-                    Numero = numero,
-                    TieneBano = tieneBano,
-                    Descripcion = descripcion,
-                    PrecioMensual = precioMensual
-                };
+                var data = new { Numero = numero, TieneBano = tieneBano, Descripcion = descripcion, PrecioMensual = precioMensual };
                 var response = await Http.PutAsJsonAsync($"api/habitaciones/{habitacionEditando.Id}", data);
                 mensaje = response.IsSuccessStatusCode ? "Habitación actualizada" : "Error al actualizar";
             }
             else
             {
-                var data = new
-                {
-                    ViviendaId = ViviendaId,
-                    Numero = numero,
-                    TieneBano = tieneBano,
-                    Descripcion = descripcion,
-                    PrecioMensual = precioMensual
-                };
+                var data = new { ViviendaId = ViviendaId, Numero = numero, TieneBano = tieneBano, Descripcion = descripcion, PrecioMensual = precioMensual };
                 var response = await Http.PostAsJsonAsync("api/habitaciones", data);
                 mensaje = response.IsSuccessStatusCode ? "Habitación creada" : "Error al crear";
             }

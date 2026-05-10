@@ -3,84 +3,86 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Inquilinos de la vivienda</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Inquilinos de la vivienda</MudText>
 
-<button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/viviendas")'>Volver</button>
+<MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.ArrowBack"
+           OnClick='() => Navigation.NavigateTo("/viviendas")' Class="mr-2 mb-4">Volver</MudButton>
 
-<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd"
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
     @(mostrarForm ? "Cancelar" : "Añadir inquilino")
-</button>
+</MudButton>
 
 @if (mostrarForm)
 {
-    <div class="form-container">
-        <h3>Asignar inquilino</h3>
+    <MudCard Class="mb-4 pa-4">
+        <MudCardContent>
+            <MudText Typo="Typo.h6" Class="mb-3">Asignar inquilino</MudText>
 
-        <div class="form-group">
-            <label>Email del inquilino</label>
-            <input type="email" class="form-control" @bind="emailInquilino" />
-        </div>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="emailInquilino" Label="Email del inquilino" Variant="Variant.Outlined"
+                                  InputType="InputType.Email" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="habitacionSeleccionada" Label="Habitación (opcional)" Variant="Variant.Outlined">
+                        <MudSelectItem Value="0">Sin habitación asignada</MudSelectItem>
+                        @foreach (var h in habitaciones)
+                        {
+                            <MudSelectItem Value="@h.Id">@h.Numero - @(h.TieneBano ? "Con baño" : "Sin baño") - @(h.PrecioMensual?.ToString("F2") ?? "0") €</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
 
-        <div class="form-group">
-            <label>Habitación (opcional)</label>
-            <select class="form-control" @bind="habitacionSeleccionada">
-                <option value="0">Sin habitación asignada</option>
-                @foreach (var h in habitaciones)
-                {
-                    <option value="@h.Id">@h.Numero - @(h.TieneBano ? "Con baño" : "Sin baño") - @(h.PrecioMensual?.ToString("F2") ?? "0") €</option>
-                }
-            </select>
-        </div>
-
-        <button class="btn btn-success" @onclick="AsignarInquilino">Asignar</button>
-    </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="AsignarInquilino" Class="mt-3">Asignar</MudButton>
+        </MudCardContent>
+    </MudCard>
 }
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (inquilinos.Count == 0)
 {
-    <p>No hay inquilinos asignados.</p>
+    <MudAlert Severity="Severity.Normal">No hay inquilinos asignados.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Habitación</th>
-                <th>Fecha inicio</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var iv in inquilinos)
-            {
-                <tr>
-                    <td>@iv.Inquilino?.Nombre @iv.Inquilino?.Apellidos</td>
-                    <td>@iv.Inquilino?.Email</td>
-                    <td>@(iv.Habitacion?.Numero ?? "Sin asignar")</td>
-                    <td>@iv.FechaInicio</td>
-                    <td>@(iv.Activo ? "Activo" : "Inactivo")</td>
-                    <td>
-                        @if (iv.Activo)
-                        {
-                            <button class="btn btn-sm btn-danger" @onclick="() => DesactivarInquilino(iv.Id)">Desactivar</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@inquilinos" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Habitación</MudTh>
+            <MudTh>Fecha inicio</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Inquilino?.Nombre @context.Inquilino?.Apellidos</MudTd>
+            <MudTd>@context.Inquilino?.Email</MudTd>
+            <MudTd>@(context.Habitacion?.Numero ?? "Sin asignar")</MudTd>
+            <MudTd>@context.FechaInicio</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@(context.Activo ? Color.Success : Color.Default)">
+                    @(context.Activo ? "Activo" : "Inactivo")
+                </MudChip>
+            </MudTd>
+            <MudTd>
+                @if (context.Activo)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Error"
+                               OnClick="() => DesactivarInquilino(context.Id)">Desactivar</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {

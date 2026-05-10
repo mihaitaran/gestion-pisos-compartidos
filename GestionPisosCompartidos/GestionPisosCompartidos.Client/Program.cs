@@ -3,6 +3,7 @@ using GestionPisosCompartidos.Client.Services;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -20,5 +21,7 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri("https://localhost:7024/")
     };
 });
+
+builder.Services.AddMudServices();
 
 await builder.Build().RunAsync();

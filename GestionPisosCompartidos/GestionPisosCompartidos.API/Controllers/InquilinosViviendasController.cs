@@ -38,8 +38,15 @@ namespace GestionPisosCompartidos.API.Controllers
         [HttpPost]
         public async Task<ActionResult<InquilinosVivienda>> Create(InquilinosVivienda inquilinoVivienda)
         {
-            var created = await _service.CreateAsync(inquilinoVivienda);
-            return Ok(created);
+            try
+            {
+                var created = await _service.CreateAsync(inquilinoVivienda);
+                return Ok(created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPatch("{id}/desactivar")]

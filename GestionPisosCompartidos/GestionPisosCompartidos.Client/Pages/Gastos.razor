@@ -1,0 +1,307 @@
+﻿@page "/gastos"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" Class="mb-4">Gastos</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
+    @(mostrarForm ? "Cancelar" : "Registrar gasto")
+</MudButton>
+
+@if (mostrarForm)
+{
+    <MudCard Class="mb-4 pa-4">
+        <MudCardContent>
+            <MudText Typo="Typo.h6" Class="mb-3">Nuevo gasto</MudText>
+
+            @if (rol == "Inquilino" && viviendaActiva != null)
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3">
+                    Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+                </MudAlert>
+            }
+
+            <MudGrid>
+                @if (rol == "Propietario")
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined"
+                                   ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarInquilinosVivienda(); })">
+                            <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
+                            @foreach (var v in viviendas)
+                            {
+                                <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="categoria" Label="Categoría" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("")">Selecciona categoría</MudSelectItem>
+                        <MudSelectItem Value="@("Alquiler")">Alquiler</MudSelectItem>
+                        <MudSelectItem Value="@("Luz")">Luz</MudSelectItem>
+                        <MudSelectItem Value="@("Agua")">Agua</MudSelectItem>
+                        <MudSelectItem Value="@("Gas")">Gas</MudSelectItem>
+                        <MudSelectItem Value="@("Internet")">Internet</MudSelectItem>
+                        <MudSelectItem Value="@("Comunidad")">Comunidad</MudSelectItem>
+                        <MudSelectItem Value="@("Otro")">Otro</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="concepto" Label="Concepto" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField @bind-Value="importeTotal" Label="Importe total (€)" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker @bind-Date="fechaGasto" Label="Fecha del gasto" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+
+            @if (inquilinosVivienda.Count > 0)
+            {
+                <MudSelect @bind-Value="tipoReparto" Label="Asignar a" Variant="Variant.Outlined" Class="mt-3">
+                    <MudSelectItem Value="@("todos")">Todos los inquilinos</MudSelectItem>
+                    <MudSelectItem Value="@("seleccionados")">Elegir inquilinos</MudSelectItem>
+                </MudSelect>
+
+                @if (tipoReparto == "seleccionados")
+                {
+                    <MudPaper Class="pa-3 mt-3" Elevation="0" Outlined="true">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Selecciona inquilinos</MudText>
+                        @foreach (var iv in inquilinosVivienda)
+                        {
+                            <MudCheckBox T="bool" Value="@inquilinosSeleccionados.Contains(iv.InquilinoId)"
+                                         ValueChanged="@((bool val) => ToggleInquilino(iv.InquilinoId, val))"
+                                         Label="@($"{iv.Inquilino?.Nombre} {iv.Inquilino?.Apellidos}")" Color="Color.Primary" />
+                        }
+                    </MudPaper>
+                }
+            }
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CrearGasto" Class="mt-3">Guardar</MudButton>
+        </MudCardContent>
+    </MudCard>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
+}
+
+@if (cargando)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (gastos.Count == 0)
+{
+    <MudAlert Severity="Severity.Normal">No hay gastos registrados.</MudAlert>
+}
+else
+{
+    <MudTable Items="@gastos" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Concepto</MudTh>
+            <MudTh>Categoría</MudTh>
+            <MudTh>Importe</MudTh>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Vivienda</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Concepto</MudTd>
+            <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Primary">@context.Categoria</MudChip></MudTd>
+            <MudTd>@context.ImporteTotal.ToString("F2") €</MudTd>
+            <MudTd>@context.FechaGasto</MudTd>
+            <MudTd>@context.Vivienda?.Direccion - @context.Vivienda?.Ciudad</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarGasto(context.Id)" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<GastoDTO> gastos = new();
+    private List<ViviendaDTO> viviendas = new();
+    private List<InquilinoViviendaDTO> inquilinosVivienda = new();
+    private List<int> inquilinosSeleccionados = new();
+    private ViviendaDTO? viviendaActiva = null;
+    private bool cargando = true;
+    private bool mostrarForm = false;
+    private string mensaje = "";
+    private string tipoReparto = "todos";
+    private string rol = "";
+
+    private int viviendaSeleccionada = 0;
+    private string concepto = "";
+    private string categoria = "";
+    private decimal importeTotal = 0;
+    private DateTime? fechaGasto = DateTime.Today;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var autenticado = await AuthService.IsAuthenticatedAsync();
+            if (!autenticado)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+            await CargarDatos();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                rol = user.Rol;
+                if (rol == "Propietario")
+                {
+                    viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+                }
+                else
+                {
+                    var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                    var activa = asignaciones.FirstOrDefault(a => a.Activo);
+
+                    if (activa?.Vivienda != null)
+                    {
+                        viviendaActiva = activa.Vivienda;
+                        viviendas = new List<ViviendaDTO> { activa.Vivienda };
+                        viviendaSeleccionada = activa.ViviendaId;
+                        await CargarInquilinosVivienda();
+                    }
+                }
+
+                gastos = new();
+                foreach (var v in viviendas)
+                {
+                    var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                    gastos.AddRange(gastosVivienda);
+                }
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar datos";
+        }
+        cargando = false;
+    }
+
+    private async Task CargarInquilinosVivienda()
+    {
+        inquilinosVivienda = new();
+        inquilinosSeleccionados = new();
+        tipoReparto = "todos";
+        if (viviendaSeleccionada == 0) return;
+
+        try
+        {
+            var todos = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/vivienda/{viviendaSeleccionada}") ?? new();
+            inquilinosVivienda = todos.Where(iv => iv.Activo).ToList();
+        }
+        catch
+        {
+            mensaje = "Error al cargar inquilinos";
+        }
+    }
+
+    private void ToggleInquilino(int inquilinoId, bool seleccionado)
+    {
+        if (seleccionado)
+        {
+            if (!inquilinosSeleccionados.Contains(inquilinoId))
+                inquilinosSeleccionados.Add(inquilinoId);
+        }
+        else
+        {
+            inquilinosSeleccionados.Remove(inquilinoId);
+        }
+    }
+
+    private async Task CrearGasto()
+    {
+        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(categoria))
+        {
+            mensaje = "Selecciona vivienda y categoría";
+            return;
+        }
+
+        if (tipoReparto == "seleccionados" && inquilinosSeleccionados.Count == 0)
+        {
+            mensaje = "Selecciona al menos un inquilino";
+            return;
+        }
+
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            var inquilinosParaReparto = tipoReparto == "todos"
+                ? inquilinosVivienda.Select(iv => iv.InquilinoId).ToList()
+                : inquilinosSeleccionados;
+
+            var data = new
+            {
+                ViviendaId = viviendaSeleccionada,
+                Concepto = concepto,
+                Categoria = categoria,
+                ImporteTotal = importeTotal,
+                FechaGasto = fechaGasto?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"),
+                CreadoPorId = user.UsuarioId,
+                InquilinosIds = inquilinosParaReparto
+            };
+
+            var response = await Http.PostAsJsonAsync("api/gastos", data);
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Gasto registrado";
+                mostrarForm = false;
+                concepto = "";
+                categoria = "";
+                importeTotal = 0;
+                if (rol == "Propietario")
+                {
+                    viviendaSeleccionada = 0;
+                    inquilinosVivienda = new();
+                }
+                inquilinosSeleccionados = new();
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al crear el gasto";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al guardar";
+        }
+    }
+
+    private async Task EliminarGasto(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/gastos/{id}");
+            mensaje = response.IsSuccessStatusCode ? "Gasto eliminado" : "Error al eliminar";
+            await CargarDatos();
+        }
+        catch
+        {
+            mensaje = "Error al eliminar";
+        }
+    }
+}

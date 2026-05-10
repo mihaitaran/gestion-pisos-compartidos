@@ -3,57 +3,51 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Estado de pagos</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Estado de pagos</MudText>
 
-<div class="form-group">
-    <label>Filtrar por vivienda</label>
-    <select class="form-control" @bind="viviendaSeleccionada" @bind:after="CargarPagos">
-        <option value="0">Todas las viviendas</option>
-        @foreach (var v in viviendas)
-        {
-            <option value="@v.Id">@v.Direccion - @v.Ciudad</option>
-        }
-    </select>
-</div>
+<MudSelect T="int" Value="viviendaSeleccionada" Label="Filtrar por vivienda" Variant="Variant.Outlined"
+           Class="mb-4" Style="max-width: 400px;"
+           ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarPagos(); })">
+    <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
+    @foreach (var v in viviendas)
+    {
+        <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+    }
+</MudSelect>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (pagos.Count == 0)
 {
-    <p>No hay pagos registrados.</p>
+    <MudAlert Severity="Severity.Normal">No hay pagos registrados.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Concepto</th>
-                <th>Inquilino</th>
-                <th>Importe</th>
-                <th>Estado</th>
-                <th>Fecha pago</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in pagos)
-            {
-                <tr>
-                    <td>@p.Gasto?.Concepto</td>
-                    <td>@p.Inquilino?.Nombre @p.Inquilino?.Apellidos</td>
-                    <td>@p.Importe.ToString("F2") €</td>
-                    <td>@p.Estado</td>
-                    <td>@(p.FechaPago ?? "-")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@pagos" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Concepto</MudTh>
+            <MudTh>Inquilino</MudTh>
+            <MudTh>Importe</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Fecha pago</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Gasto?.Concepto</MudTd>
+            <MudTd>@context.Inquilino?.Nombre @context.Inquilino?.Apellidos</MudTd>
+            <MudTd>@context.Importe.ToString("F2") €</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado)">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>@(context.FechaPago ?? "-")</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
@@ -105,10 +99,7 @@ else
                 var gastos = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{viviendaSeleccionada}") ?? new();
                 pagos = gastos.SelectMany(g => g.Pagos.Select(p => new PagoDTO
                 {
-                    Id = p.Id,
-                    Importe = p.Importe,
-                    Estado = p.Estado,
-                    FechaPago = p.FechaPago,
+                    Id = p.Id, Importe = p.Importe, Estado = p.Estado, FechaPago = p.FechaPago,
                     Inquilino = p.Inquilino,
                     Gasto = new GastoDTO { Concepto = g.Concepto, Categoria = g.Categoria }
                 })).ToList();
@@ -121,10 +112,7 @@ else
                     var gastos = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
                     pagos.AddRange(gastos.SelectMany(g => g.Pagos.Select(p => new PagoDTO
                     {
-                        Id = p.Id,
-                        Importe = p.Importe,
-                        Estado = p.Estado,
-                        FechaPago = p.FechaPago,
+                        Id = p.Id, Importe = p.Importe, Estado = p.Estado, FechaPago = p.FechaPago,
                         Inquilino = p.Inquilino,
                         Gasto = new GastoDTO { Concepto = g.Concepto, Categoria = g.Categoria }
                     })));
@@ -136,5 +124,16 @@ else
             mensaje = "Error al cargar pagos";
         }
         cargando = false;
+    }
+
+    private Color GetEstadoColor(string estado)
+    {
+        return estado switch
+        {
+            "Pagado" => Color.Success,
+            "Pendiente" => Color.Warning,
+            "Rechazado" => Color.Error,
+            _ => Color.Default
+        };
     }
 }

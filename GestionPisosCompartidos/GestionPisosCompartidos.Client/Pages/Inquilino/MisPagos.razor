@@ -3,56 +3,62 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Mis pagos</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Mis pagos</MudText>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
 else if (pagos.Count == 0)
 {
-    <p>No tienes pagos asignados.</p>
+    <MudAlert Severity="Severity.Normal">No tienes pagos asignados.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Concepto</th>
-                <th>Importe</th>
-                <th>Estado</th>
-                <th>Fecha pago</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in pagos)
-            {
-                <tr>
-                    <td>@p.Gasto?.Concepto</td>
-                    <td>@p.Importe.ToString("F2") €</td>
-                    <td>@p.Estado</td>
-                    <td>@(p.FechaPago ?? "-")</td>
-                    <td>
-                        @if (p.Estado == "Pendiente")
-                        {
-                            <button class="btn btn-sm btn-success" @onclick="() => MarcarPagado(p.Id)">Marcar pagado</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle1" Color="Color.Warning">Total pendiente</MudText>
+                <MudText Typo="Typo.h5">@pagos.Where(p => p.Estado == "Pendiente").Sum(p => p.Importe).ToString("F2") €</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle1" Color="Color.Success">Total pagado</MudText>
+                <MudText Typo="Typo.h5">@pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Importe).ToString("F2") €</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 
-    <div class="resumen">
-        <p>Total pendiente: @pagos.Where(p => p.Estado == "Pendiente").Sum(p => p.Importe).ToString("F2") €</p>
-        <p>Total pagado: @pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Importe).ToString("F2") €</p>
-    </div>
+    <MudTable Items="@pagos" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Concepto</MudTh>
+            <MudTh>Importe</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Fecha pago</MudTh>
+            <MudTh>Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Gasto?.Concepto</MudTd>
+            <MudTd>@context.Importe.ToString("F2") €</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado)">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>@(context.FechaPago ?? "-")</MudTd>
+            <MudTd>
+                @if (context.Estado == "Pendiente")
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Check" OnClick="() => MarcarPagado(context.Id)">Pagado</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
@@ -105,5 +111,16 @@ else
         {
             mensaje = "Error al marcar como pagado";
         }
+    }
+
+    private Color GetEstadoColor(string estado)
+    {
+        return estado switch
+        {
+            "Pagado" => Color.Success,
+            "Pendiente" => Color.Warning,
+            "Rechazado" => Color.Error,
+            _ => Color.Default
+        };
     }
 }

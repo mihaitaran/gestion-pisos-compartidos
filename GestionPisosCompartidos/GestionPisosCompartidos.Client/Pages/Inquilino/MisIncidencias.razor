@@ -3,98 +3,95 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<h2>Mis incidencias</h2>
+<MudText Typo="Typo.h4" Class="mb-4">Mis incidencias</MudText>
 
-<button class="btn btn-primary" @onclick="() => mostrarForm = !mostrarForm">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
     @(mostrarForm ? "Cancelar" : "Reportar incidencia")
-</button>
+</MudButton>
 
 @if (mostrarForm)
 {
-    <div class="form-container">
-        <h3>Nueva incidencia</h3>
+    <MudCard Class="mb-4 pa-4">
+        <MudCardContent>
+            <MudText Typo="Typo.h6" Class="mb-3">Nueva incidencia</MudText>
 
-        <div class="form-group">
-            <label>Vivienda</label>
-            <select class="form-control" @bind="viviendaSeleccionada">
-                <option value="0">Selecciona vivienda</option>
-                @foreach (var v in viviendas)
-                {
-                    <option value="@v.Vivienda?.Id">@v.Vivienda?.Direccion - @v.Vivienda?.Ciudad</option>
-                }
-            </select>
-        </div>
+            @if (viviendaActiva != null)
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3">
+                    Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+                </MudAlert>
+            }
 
-        <div class="form-group">
-            <label>Título</label>
-            <input type="text" class="form-control" @bind="titulo" />
-        </div>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="titulo" Label="Título" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="prioridad" Label="Prioridad" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Baja")">Baja</MudSelectItem>
+                        <MudSelectItem Value="@("Media")">Media</MudSelectItem>
+                        <MudSelectItem Value="@("Alta")">Alta</MudSelectItem>
+                        <MudSelectItem Value="@("Urgente")">Urgente</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="descripcion" Label="Descripción" Variant="Variant.Outlined" Lines="3" />
+                </MudItem>
+            </MudGrid>
 
-        <div class="form-group">
-            <label>Descripción</label>
-            <textarea class="form-control" @bind="descripcion"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Prioridad</label>
-            <select class="form-control" @bind="prioridad">
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-                <option value="Urgente">Urgente</option>
-            </select>
-        </div>
-
-        <button class="btn btn-success" @onclick="CrearIncidencia">Enviar</button>
-    </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CrearIncidencia" Class="mt-3">Enviar</MudButton>
+        </MudCardContent>
+    </MudCard>
 }
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-info">@mensaje</div>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (viviendaActiva == null)
+{
+    <MudAlert Severity="Severity.Warning">No tienes una vivienda asignada.</MudAlert>
 }
 else if (incidencias.Count == 0)
 {
-    <p>No has reportado incidencias.</p>
+    <MudAlert Severity="Severity.Normal">No has reportado incidencias.</MudAlert>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var i in incidencias)
-            {
-                <tr>
-                    <td>@i.Titulo</td>
-                    <td>@i.Prioridad</td>
-                    <td>@i.Estado</td>
-                    <td>@i.FechaCreacion</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudTable Items="@incidencias" Hover="true" Elevation="2">
+        <HeaderContent>
+            <MudTh>Título</MudTh>
+            <MudTh>Prioridad</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Fecha</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Titulo</MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado ?? "")">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>@context.FechaCreacion</MudTd>
+        </RowTemplate>
+    </MudTable>
 }
 
 @code {
     private List<IncidenciaDTO> incidencias = new();
-    private List<InquilinoViviendaDTO> viviendas = new();
+    private ViviendaDTO? viviendaActiva = null;
+    private int viviendaId = 0;
     private bool cargando = true;
     private bool mostrarForm = false;
     private string mensaje = "";
 
-    private int viviendaSeleccionada = 0;
     private string titulo = "";
     private string descripcion = "";
     private string prioridad = "Media";
@@ -123,14 +120,13 @@ else
             if (user != null)
             {
                 var todas = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
-                viviendas = todas.Where(v => v.Activo).ToList();
+                var activa = todas.FirstOrDefault(v => v.Activo);
 
-                // Solo cargar incidencias de las viviendas del inquilino
-                incidencias = new();
-                foreach (var v in viviendas)
+                if (activa?.Vivienda != null)
                 {
-                    var incidenciasVivienda = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{v.ViviendaId}") ?? new();
-                    incidencias.AddRange(incidenciasVivienda);
+                    viviendaActiva = activa.Vivienda;
+                    viviendaId = activa.ViviendaId;
+                    incidencias = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{viviendaId}") ?? new();
                 }
             }
         }
@@ -143,9 +139,9 @@ else
 
     private async Task CrearIncidencia()
     {
-        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(titulo))
+        if (viviendaId == 0 || string.IsNullOrEmpty(titulo))
         {
-            mensaje = "Selecciona vivienda y añade un título";
+            mensaje = "Añade un título";
             return;
         }
 
@@ -156,7 +152,7 @@ else
 
             var data = new
             {
-                ViviendaId = viviendaSeleccionada,
+                ViviendaId = viviendaId,
                 ReportadaPorId = user.UsuarioId,
                 Titulo = titulo,
                 Descripcion = descripcion,
@@ -183,5 +179,29 @@ else
         {
             mensaje = "Error al enviar";
         }
+    }
+
+    private Color GetPrioridadColor(string prioridad)
+    {
+        return prioridad switch
+        {
+            "Baja" => Color.Info,
+            "Media" => Color.Warning,
+            "Alta" => Color.Error,
+            "Urgente" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetEstadoColor(string estado)
+    {
+        return estado switch
+        {
+            "Abierta" => Color.Error,
+            "EnProceso" => Color.Warning,
+            "Resuelta" => Color.Success,
+            "Cerrada" => Color.Default,
+            _ => Color.Default
+        };
     }
 }

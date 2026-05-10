@@ -2,31 +2,43 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<div class="page">
-    @if (mostrarHeader)
+<MudLayout>
+    @if (mostrarLayout)
     {
-        <header class="top-bar">
-            <div class="top-bar-left">
-                <a href="/dashboard" class="brand">Gestión Pisos</a>
-            </div>
-            <div class="top-bar-right">
-                @if (usuario != null)
-                {
-                    <span>Hola, @usuario.Nombre (@usuario.Rol)</span>
-                    <button class="btn btn-outline" @onclick="CerrarSesion">Cerrar sesión</button>
-                }
-            </div>
-        </header>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+            <MudText Typo="Typo.h6">Gestión Pisos Compartidos</MudText>
+            <MudSpacer />
+            @if (usuario != null)
+            {
+                <MudText Class="mr-4">@usuario.Nombre (@usuario.Rol)</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="CerrarSesion">Cerrar sesión</MudButton>
+            }
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="drawerOpen" Elevation="2">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h6">Menú</MudText>
+            </MudDrawerHeader>
+            <NavMenu />
+        </MudDrawer>
     }
 
-    <main class="main-content">
+    <MudMainContent Class="pa-4">
         @Body
-    </main>
-</div>
+    </MudMainContent>
+</MudLayout>
 
 @code {
     private GestionPisosCompartidos.Client.Services.UserData? usuario;
-    private bool mostrarHeader = false;
+    private bool mostrarLayout = false;
+    private bool drawerOpen = true;
+
+    protected override void OnParametersSet()
+    {
+        var uri = Navigation.Uri.ToLower();
+        mostrarLayout = !uri.Contains("/login") && !uri.Contains("/register");
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -36,18 +48,12 @@
         }
     }
 
-    protected override void OnParametersSet()
-    {
-        var uri = Navigation.Uri.ToLower();
-        mostrarHeader = !uri.Contains("/login") && !uri.Contains("/register");
-    }
-
     private async Task ActualizarEstado()
     {
         var uri = Navigation.Uri.ToLower();
-        mostrarHeader = !uri.Contains("/login") && !uri.Contains("/register");
+        mostrarLayout = !uri.Contains("/login") && !uri.Contains("/register");
 
-        if (mostrarHeader)
+        if (mostrarLayout)
         {
             usuario = await AuthService.GetUserAsync();
         }
@@ -56,6 +62,11 @@
             usuario = null;
         }
         StateHasChanged();
+    }
+
+    private void ToggleDrawer()
+    {
+        drawerOpen = !drawerOpen;
     }
 
     private async Task CerrarSesion()
