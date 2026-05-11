@@ -37,6 +37,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHabitacionService, HabitacionService>();
 builder.Services.AddScoped<IMensajeService, MensajeService>();
 
+builder.Services.AddSignalR();
+
 // Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -53,9 +55,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://localhost:7037", "http://localhost:7024")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -93,4 +96,5 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<GestionPisosCompartidos.API.Hubs.ChatHub>("/chathub");
 app.Run();

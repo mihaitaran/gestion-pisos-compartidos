@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
+@implements IAsyncDisposable
 
 <MudText Typo="Typo.h4" Class="mb-4">Chat de la vivienda</MudText>
 
@@ -9,7 +10,7 @@
 {
     <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined"
                Class="mb-4" Style="max-width: 400px;"
-               ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarMensajes(); })">
+               ValueChanged="CambiarVivienda">
         <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
         @foreach (var v in viviendas)
         {
@@ -31,7 +32,7 @@ else if (viviendaActiva != null)
 
 @if (viviendaSeleccionada > 0)
 {
-    <MudPaper Class="chat-container pa-4 mb-4" Elevation="2" Style="max-height: 500px; overflow-y: auto;">
+    <MudPaper Class="pa-4 mb-4" Elevation="2" Style="max-height: 500px; overflow-y: auto;">
         @if (mensajes.Count == 0)
         {
             <MudText Align="Align.Center" Color="Color.Secondary">No hay mensajes aún. ¡Empieza la conversación!</MudText>
@@ -70,10 +71,12 @@ else if (rol == "Inquilino" && viviendaActiva == null)
 }
 
 @code {
+    private HubConnection? hubConnection;
     private List<MensajeDTO> mensajes = new();
     private List<ViviendaDTO> viviendas = new();
     private ViviendaDTO? viviendaActiva = null;
     private int viviendaSeleccionada = 0;
+    private int viviendaAnterior = 0;
     private int usuarioId = 0;
     private string nuevoMensaje = "";
     private string mensajeAlerta = "";
@@ -89,9 +92,59 @@ else if (rol == "Inquilino" && viviendaActiva == null)
                 Navigation.NavigateTo("/login");
                 return;
             }
+            await IniciarSignalR();
             await CargarViviendas();
             StateHasChanged();
         }
+    }
+
+    private async Task IniciarSignalR()
+    {
+        var token = await AuthService.GetTokenAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7024/chathub", options =>
+            {
+                options.AccessTokenProvider = () => Task.FromResult(token);
+            })
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<MensajeDTO>("RecibirMensaje", (mensaje) =>
+        {
+            if (!mensajes.Any(m => m.Id == mensaje.Id))
+            {
+                mensajes.Add(mensaje);
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        try
+        {
+            await hubConnection.StartAsync();
+        }
+        catch
+        {
+            mensajeAlerta = "No se pudo conectar al chat en tiempo real";
+        }
+    }
+
+    private async Task CambiarVivienda(int nuevaVivienda)
+    {
+        if (viviendaAnterior > 0 && hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("SalirDeVivienda", viviendaAnterior);
+        }
+
+        viviendaSeleccionada = nuevaVivienda;
+        viviendaAnterior = nuevaVivienda;
+
+        if (viviendaSeleccionada > 0 && hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("UnirseAVivienda", viviendaSeleccionada);
+        }
+
+        await CargarMensajes();
     }
 
     private async Task CargarViviendas()
@@ -117,6 +170,13 @@ else if (rol == "Inquilino" && viviendaActiva == null)
                 {
                     viviendaActiva = activa.Vivienda;
                     viviendaSeleccionada = activa.ViviendaId;
+                    viviendaAnterior = activa.ViviendaId;
+
+                    if (hubConnection != null)
+                    {
+                        await hubConnection.InvokeAsync("UnirseAVivienda", viviendaSeleccionada);
+                    }
+
                     await CargarMensajes();
                 }
             }
@@ -169,5 +229,13 @@ else if (rol == "Inquilino" && viviendaActiva == null)
     private async Task EnviarConEnter(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await EnviarMensaje();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }
