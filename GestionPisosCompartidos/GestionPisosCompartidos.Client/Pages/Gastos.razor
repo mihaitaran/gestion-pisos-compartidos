@@ -117,7 +117,10 @@ else
             <MudTd>@context.FechaGasto</MudTd>
             <MudTd>@context.Vivienda?.Direccion - @context.Vivienda?.Ciudad</MudTd>
             <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarGasto(context.Id)" />
+                @if (rol == "Propietario" || context.CreadoPorId == usuarioId)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarGasto(context.Id)" />
+                }
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -140,6 +143,8 @@ else
     private string categoria = "";
     private decimal importeTotal = 0;
     private DateTime? fechaGasto = DateTime.Today;
+
+    private int usuarioId = 0;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -165,6 +170,7 @@ else
             if (user != null)
             {
                 rol = user.Rol;
+                usuarioId = user.UsuarioId;
                 if (rol == "Propietario")
                 {
                     viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
@@ -183,11 +189,27 @@ else
                     }
                 }
 
-                gastos = new();
-                foreach (var v in viviendas)
+                if (rol == "Inquilino")
                 {
-                    var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
-                    gastos.AddRange(gastosVivienda);
+                    var todosGastos = new List<GastoDTO>();
+                    foreach (var v in viviendas)
+                    {
+                        var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                        todosGastos.AddRange(gastosVivienda);
+                    }
+                    gastos = todosGastos.Where(g =>
+                        g.Categoria != "Alquiler" ||
+                        g.Pagos.Any(p => p.InquilinoId == usuarioId)
+                    ).ToList();
+                }
+                else
+                {
+                    gastos = new();
+                    foreach (var v in viviendas)
+                    {
+                        var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                        gastos.AddRange(gastosVivienda);
+                    }
                 }
             }
         }

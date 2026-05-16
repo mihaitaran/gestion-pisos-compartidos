@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 
 <MudNavMenu>
-    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Href="/menu" Icon="@Icons.Material.Filled.Dashboard">Menu</MudNavLink>
 
     @if (rol == "Propietario")
     {
@@ -10,16 +10,16 @@
         <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
         <MudNavLink Href="/pagos" Icon="@Icons.Material.Filled.Payment">Pagos</MudNavLink>
         <MudNavLink Href="/incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
-        <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
     }
     else if (rol == "Inquilino")
     {
         <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
         <MudNavLink Href="/mis-pagos" Icon="@Icons.Material.Filled.Payment">Mis pagos</MudNavLink>
         <MudNavLink Href="/mis-incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
-        <MudNavLink Href="/calendario" Icon="@Icons.Material.Filled.CalendarMonth">Calendario</MudNavLink>
-        <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
     }
+
+    <MudNavLink Href="/calendario" Icon="@Icons.Material.Filled.CalendarMonth">Calendario</MudNavLink>
+    <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
 </MudNavMenu>
 
 @code {

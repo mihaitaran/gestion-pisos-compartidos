@@ -34,6 +34,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
         {
             return await _context.Incidencias
                 .Where(i => i.ViviendaId == viviendaId)
+                .Include(i => i.Vivienda)
                 .Include(i => i.ReportadaPor)
                 .ToListAsync();
         }

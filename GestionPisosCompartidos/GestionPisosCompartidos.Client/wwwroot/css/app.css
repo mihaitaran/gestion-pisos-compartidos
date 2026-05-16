@@ -143,12 +143,12 @@ border-radius: 12px;
 width: 100%;
 }
 
-.dashboard-card {
+.menu-card {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-    .dashboard-card:hover {
+    .menu-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     }
@@ -173,4 +173,25 @@ width: 100%;
 
 .login-card .mud-button-root {
     width: 100%;
+}
+
+.menu-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 12px;
+    height: 100%;
+}
+
+    .menu-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+
+.menu-welcome {
+    background: linear-gradient(135deg, #1565C0 0%, #00897B 100%);
+    border-radius: 12px;
+    color: white;
+    padding: 32px;
+    margin-top: 60px;
+    margin-bottom: 24px;
 }

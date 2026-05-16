@@ -5,23 +5,42 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Calendario de tareas</MudText>
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
-    @(mostrarForm ? "Cancelar" : "Nueva tarea")
-</MudButton>
+<MudGrid Class="mb-4">
+    @if (rol == "Propietario")
+    {
+        <MudItem xs="12" sm="6">
+            <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined"
+                       ValueChanged="CambiarVivienda">
+                <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
+                @foreach (var v in viviendas)
+                {
+                    <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    }
+    else if (viviendaActiva != null)
+    {
+        <MudItem xs="12" sm="6">
+            <MudAlert Severity="Severity.Info">
+                Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+            </MudAlert>
+        </MudItem>
+    }
+    <MudItem xs="12" sm="6" Class="d-flex align-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="() => { mostrarForm = !mostrarForm; tareaEditando = null; LimpiarFormulario(); }"
+                   Disabled="@(viviendaSeleccionada == 0)">
+            @(mostrarForm ? "Cancelar" : "Nueva tarea")
+        </MudButton>
+    </MudItem>
+</MudGrid>
 
-@if (mostrarForm)
+@if (mostrarForm && viviendaSeleccionada > 0)
 {
     <MudCard Class="mb-4 pa-4">
         <MudCardContent>
-            <MudText Typo="Typo.h6" Class="mb-3">Nueva tarea</MudText>
-
-            @if (viviendaActiva != null)
-            {
-                <MudAlert Severity="Severity.Info" Class="mb-3">
-                    Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
-                </MudAlert>
-            }
+            <MudText Typo="Typo.h6" Class="mb-3">@(tareaEditando != null ? "Editar tarea" : "Nueva tarea")</MudText>
 
             <MudGrid>
                 <MudItem xs="12" sm="6">
@@ -33,18 +52,30 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="descripcion" Label="Descripción" Variant="Variant.Outlined" Lines="2" />
                 </MudItem>
-                <MudItem xs="12" sm="6">
+                @if (rol == "Propietario")
+                {
+                    <MudItem xs="12" sm="4">
+                        <MudSelect T="int" @bind-Value="asignadaAId" Label="Asignar a" Variant="Variant.Outlined">
+                            <MudSelectItem Value="0">Sin asignar</MudSelectItem>
+                            @foreach (var iv in inquilinosVivienda)
+                            {
+                                <MudSelectItem Value="@iv.InquilinoId">@iv.Inquilino?.Nombre @iv.Inquilino?.Apellidos</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="4">
                     <MudCheckBox @bind-Value="recurrente" Label="Tarea recurrente" Color="Color.Primary" Class="mt-3" />
                 </MudItem>
                 @if (recurrente)
                 {
-                    <MudItem xs="12" sm="6">
+                    <MudItem xs="12" sm="4">
                         <MudNumericField @bind-Value="frecuenciaDias" Label="Cada cuántos días" Variant="Variant.Outlined" Min="1" />
                     </MudItem>
                 }
             </MudGrid>
 
-            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CrearTarea" Class="mt-3">Guardar</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="GuardarTarea" Class="mt-3">Guardar</MudButton>
         </MudCardContent>
     </MudCard>
 }
@@ -58,7 +89,11 @@
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
-else if (viviendaActiva == null)
+else if (viviendaSeleccionada == 0 && rol == "Propietario")
+{
+    <MudAlert Severity="Severity.Normal">Selecciona una vivienda para ver las tareas.</MudAlert>
+}
+else if (viviendaSeleccionada == 0 && rol == "Inquilino")
 {
     <MudAlert Severity="Severity.Warning">No tienes una vivienda asignada.</MudAlert>
 }
@@ -71,7 +106,7 @@ else
         <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="MesSiguiente" />
     </MudPaper>
 
-    <!-- Cabecera días de la semana -->
+    <!-- Cabecera días -->
     <MudGrid Spacing="0" Class="mb-1">
         @foreach (var dia in diasSemana)
         {
@@ -126,6 +161,10 @@ else
                             <MudText Typo="Typo.caption" Class="mt-2">
                                 <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" /> @t.FechaProgramada
                             </MudText>
+                            @if (t.AsignadaA != null)
+                            {
+                                <MudText Typo="Typo.caption">Asignada a: @t.AsignadaA.Nombre @t.AsignadaA.Apellidos</MudText>
+                            }
                             @if (t.Recurrente)
                             {
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="mt-1">Cada @t.FrecuenciaDias días</MudChip>
@@ -134,7 +173,30 @@ else
                         <MudCardActions>
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
                                        StartIcon="@Icons.Material.Filled.Check" OnClick="() => CompletarTarea(t.Id)">Completar</MudButton>
+                            @if (rol == "Propietario" || t.CreadaPor?.Id == usuarioId)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarTarea(t)" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarTarea(t.Id)" />
+                            }
                         </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+    @if (tareas.Any(t => t.Completada))
+    {
+        <MudText Typo="Typo.h6" Class="mt-6 mb-2">Completadas</MudText>
+        <MudGrid>
+            @foreach (var t in tareas.Where(t => t.Completada))
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="1" Style="opacity: 0.7;">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" Style="text-decoration: line-through;">@t.Titulo</MudText>
+                            <MudText Typo="Typo.caption">@t.FechaProgramada</MudText>
+                        </MudCardContent>
                     </MudCard>
                 </MudItem>
             }
@@ -142,7 +204,7 @@ else
     }
 }
 
-<!-- Diálogo detalle tarea -->
+<!-- Diálogo detalle -->
 <MudDialog @bind-Visible="mostrarDetalle">
     <TitleContent>
         <MudText Typo="Typo.h6">@tareaDetalle?.Titulo</MudText>
@@ -150,6 +212,7 @@ else
     <DialogContent>
         <MudText Typo="Typo.body1" Class="mb-2">@tareaDetalle?.Descripcion</MudText>
         <MudText Typo="Typo.body2">Fecha: @tareaDetalle?.FechaProgramada</MudText>
+        <MudText Typo="Typo.body2">Asignada a: @(tareaDetalle?.AsignadaA != null ? $"{tareaDetalle.AsignadaA.Nombre} {tareaDetalle.AsignadaA.Apellidos}" : "Sin asignar")</MudText>
         @if (tareaDetalle?.Recurrente == true)
         {
             <MudText Typo="Typo.body2">Se repite cada @tareaDetalle?.FrecuenciaDias días</MudText>
@@ -163,25 +226,35 @@ else
         {
             <MudButton Color="Color.Success" OnClick="() => CompletarTarea(tareaDetalle!.Id)">Completar</MudButton>
         }
+        @if (rol == "Propietario" || tareaDetalle?.CreadaPor?.Id == usuarioId)
+        {
+            <MudButton Color="Color.Warning" OnClick="() => { EditarTarea(tareaDetalle!); mostrarDetalle = false; }">Editar</MudButton>
+        }
         <MudButton Color="Color.Default" OnClick="() => mostrarDetalle = false">Cerrar</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     private List<TareaDTO> tareas = new();
+    private List<ViviendaDTO> viviendas = new();
+    private List<InquilinoViviendaDTO> inquilinosVivienda = new();
     private ViviendaDTO? viviendaActiva = null;
-    private int viviendaId = 0;
-    private bool cargando = true;
+    private int viviendaSeleccionada = 0;
+    private int usuarioId = 0;
+    private string rol = "";
+    private bool cargando = false;
     private bool mostrarForm = false;
     private bool mostrarDetalle = false;
     private string mensaje = "";
     private TareaDTO? tareaDetalle = null;
+    private TareaDTO? tareaEditando = null;
 
     private string titulo = "";
     private string descripcion = "";
     private DateTime? fechaProgramada = DateTime.Today;
     private bool recurrente = false;
     private int frecuenciaDias = 7;
+    private int asignadaAId = 0;
 
     private DateTime mesActual = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
     private List<DateTime> diasDelMes = new();
@@ -197,10 +270,62 @@ else
                 Navigation.NavigateTo("/login");
                 return;
             }
+
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
+            {
+                usuarioId = user.UsuarioId;
+                rol = user.Rol;
+
+                if (rol == "Propietario")
+                {
+                    viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{usuarioId}") ?? new();
+                }
+                else
+                {
+                    var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{usuarioId}") ?? new();
+                    var activa = asignaciones.FirstOrDefault(a => a.Activo);
+
+                    if (activa?.Vivienda != null)
+                    {
+                        viviendaActiva = activa.Vivienda;
+                        viviendaSeleccionada = activa.ViviendaId;
+                        await CargarDatos();
+                    }
+                }
+            }
+
             GenerarDiasMes();
-            await CargarDatos();
             StateHasChanged();
         }
+    }
+
+    private async Task CambiarVivienda(int nuevaVivienda)
+    {
+        viviendaSeleccionada = nuevaVivienda;
+        if (viviendaSeleccionada > 0)
+            await CargarDatos();
+        else
+        {
+            tareas = new();
+            inquilinosVivienda = new();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        try
+        {
+            tareas = await Http.GetFromJsonAsync<List<TareaDTO>>($"api/tareascalendario/vivienda/{viviendaSeleccionada}") ?? new();
+            var todos = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/vivienda/{viviendaSeleccionada}") ?? new();
+            inquilinosVivienda = todos.Where(iv => iv.Activo).ToList();
+        }
+        catch
+        {
+            mensaje = "Error al cargar datos";
+        }
+        cargando = false;
     }
 
     private void GenerarDiasMes()
@@ -211,41 +336,24 @@ else
 
         var diaSemanaInicio = ((int)primerDia.DayOfWeek + 6) % 7;
         for (int i = diaSemanaInicio - 1; i >= 0; i--)
-        {
             diasDelMes.Add(primerDia.AddDays(-(i + 1)));
-        }
 
         for (var dia = primerDia; dia <= ultimoDia; dia = dia.AddDays(1))
-        {
             diasDelMes.Add(dia);
-        }
 
         while (diasDelMes.Count % 7 != 0)
-        {
             diasDelMes.Add(ultimoDia.AddDays(diasDelMes.Count - diasDelMes.IndexOf(ultimoDia)));
-        }
     }
 
-    private void MesAnterior()
-    {
-        mesActual = mesActual.AddMonths(-1);
-        GenerarDiasMes();
-    }
-
-    private void MesSiguiente()
-    {
-        mesActual = mesActual.AddMonths(1);
-        GenerarDiasMes();
-    }
+    private void MesAnterior() { mesActual = mesActual.AddMonths(-1); GenerarDiasMes(); }
+    private void MesSiguiente() { mesActual = mesActual.AddMonths(1); GenerarDiasMes(); }
 
     private List<TareaDTO> ObtenerTareasDia(DateTime dia)
     {
         return tareas.Where(t =>
         {
             if (DateTime.TryParse(t.FechaProgramada, out var fecha))
-            {
                 return fecha.Date == dia.Date;
-            }
             return false;
         }).ToList();
     }
@@ -256,35 +364,22 @@ else
         mostrarDetalle = true;
     }
 
-    private async Task CargarDatos()
+    private void EditarTarea(TareaDTO t)
     {
-        cargando = true;
-        try
-        {
-            var user = await AuthService.GetUserAsync();
-            if (user != null)
-            {
-                var todas = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
-                var activa = todas.FirstOrDefault(v => v.Activo);
-
-                if (activa?.Vivienda != null)
-                {
-                    viviendaActiva = activa.Vivienda;
-                    viviendaId = activa.ViviendaId;
-                    tareas = await Http.GetFromJsonAsync<List<TareaDTO>>($"api/tareascalendario/vivienda/{viviendaId}") ?? new();
-                }
-            }
-        }
-        catch
-        {
-            mensaje = "Error al cargar datos";
-        }
-        cargando = false;
+        tareaEditando = t;
+        titulo = t.Titulo;
+        descripcion = t.Descripcion ?? "";
+        if (DateTime.TryParse(t.FechaProgramada, out var fecha))
+            fechaProgramada = fecha;
+        recurrente = t.Recurrente;
+        frecuenciaDias = t.FrecuenciaDias ?? 7;
+        asignadaAId = t.AsignadaA?.Id ?? 0;
+        mostrarForm = true;
     }
 
-    private async Task CrearTarea()
+    private async Task GuardarTarea()
     {
-        if (viviendaId == 0 || string.IsNullOrEmpty(titulo))
+        if (string.IsNullOrEmpty(titulo))
         {
             mensaje = "Añade un título";
             return;
@@ -292,36 +387,40 @@ else
 
         try
         {
-            var user = await AuthService.GetUserAsync();
-            if (user == null) return;
-
-            var data = new
+            if (tareaEditando != null)
             {
-                ViviendaId = viviendaId,
-                Titulo = titulo,
-                Descripcion = descripcion,
-                FechaProgramada = fechaProgramada,
-                CreadaPorId = user.UsuarioId,
-                AsignadaAid = user.UsuarioId,
-                Recurrente = recurrente,
-                FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
-            };
-
-            var response = await Http.PostAsJsonAsync("api/tareascalendario", data);
-
-            if (response.IsSuccessStatusCode)
-            {
-                mensaje = "Tarea creada";
-                mostrarForm = false;
-                titulo = "";
-                descripcion = "";
-                recurrente = false;
-                await CargarDatos();
+                var data = new
+                {
+                    Titulo = titulo,
+                    Descripcion = descripcion,
+                    FechaProgramada = fechaProgramada,
+                    AsignadaAid = asignadaAId > 0 ? asignadaAId : (int?)null,
+                    Recurrente = recurrente,
+                    FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
+                };
+                var response = await Http.PutAsJsonAsync($"api/tareascalendario/{tareaEditando.Id}", data);
+                mensaje = response.IsSuccessStatusCode ? "Tarea actualizada" : "Error al actualizar";
             }
             else
             {
-                mensaje = "Error al crear tarea";
+                var data = new
+                {
+                    ViviendaId = viviendaSeleccionada,
+                    Titulo = titulo,
+                    Descripcion = descripcion,
+                    FechaProgramada = fechaProgramada,
+                    CreadaPorId = usuarioId,
+                    AsignadaAid = rol == "Inquilino" ? usuarioId : (asignadaAId > 0 ? asignadaAId : (int?)null),
+                    Recurrente = recurrente,
+                    FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
+                };
+                var response = await Http.PostAsJsonAsync("api/tareascalendario", data);
+                mensaje = response.IsSuccessStatusCode ? "Tarea creada" : "Error al crear";
             }
+
+            mostrarForm = false;
+            LimpiarFormulario();
+            await CargarDatos();
         }
         catch
         {
@@ -342,5 +441,30 @@ else
         {
             mensaje = "Error al completar tarea";
         }
+    }
+
+    private async Task EliminarTarea(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/tareascalendario/{id}");
+            mensaje = response.IsSuccessStatusCode ? "Tarea eliminada" : "Error al eliminar";
+            await CargarDatos();
+        }
+        catch
+        {
+            mensaje = "Error al eliminar";
+        }
+    }
+
+    private void LimpiarFormulario()
+    {
+        tareaEditando = null;
+        titulo = "";
+        descripcion = "";
+        fechaProgramada = DateTime.Today;
+        recurrente = false;
+        frecuenciaDias = 7;
+        asignadaAId = 0;
     }
 }
