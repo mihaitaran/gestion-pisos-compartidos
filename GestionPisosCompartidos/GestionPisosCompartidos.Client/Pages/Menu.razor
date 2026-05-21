@@ -1,4 +1,5 @@
 ﻿@page "/menu"
+@using GestionPisosCompartidos.Client.Services
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
@@ -132,18 +133,12 @@
 }
 
 @code {
-    private GestionPisosCompartidos.Client.Services.UserData? usuario;
+    private UserData? usuario;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             usuario = await AuthService.GetUserAsync();
             StateHasChanged();
         }

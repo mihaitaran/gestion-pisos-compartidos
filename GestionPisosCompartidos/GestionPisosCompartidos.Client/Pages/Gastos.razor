@@ -6,7 +6,8 @@
 <MudText Typo="Typo.h4" Class="mb-4">Gastos</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4"
+           Disabled="@(viviendas.Count == 0)">
     @(mostrarForm ? "Cancelar" : "Registrar gasto")
 </MudButton>
 
@@ -150,12 +151,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await CargarDatos();
             StateHasChanged();
         }
@@ -262,6 +257,12 @@ else
         if (tipoReparto == "seleccionados" && inquilinosSeleccionados.Count == 0)
         {
             mensaje = "Selecciona al menos un inquilino";
+            return;
+        }
+
+        if (inquilinosVivienda.Count == 0)
+        {
+            mensaje = "No hay inquilinos en esta vivienda para asignar el gasto";
             return;
         }
 

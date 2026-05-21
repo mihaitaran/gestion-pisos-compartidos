@@ -97,12 +97,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await CargarHabitaciones();
             StateHasChanged();
         }
@@ -130,17 +124,34 @@ else
             {
                 var data = new { Numero = numero, TieneBano = tieneBano, Descripcion = descripcion, PrecioMensual = precioMensual };
                 var response = await Http.PutAsJsonAsync($"api/habitaciones/{habitacionEditando.Id}", data);
-                mensaje = response.IsSuccessStatusCode ? "Habitación actualizada" : "Error al actualizar";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Habitación actualizada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    mensaje = "Error al actualizar";
+                }
             }
             else
             {
                 var data = new { ViviendaId = ViviendaId, Numero = numero, TieneBano = tieneBano, Descripcion = descripcion, PrecioMensual = precioMensual };
                 var response = await Http.PostAsJsonAsync("api/habitaciones", data);
-                mensaje = response.IsSuccessStatusCode ? "Habitación creada" : "Error al crear";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Habitación creada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    mensaje = error.Contains("solo tiene") ? "No puedes crear más habitaciones. El límite es el número de habitaciones del piso." : "Error al crear";
+                }
             }
 
-            mostrarForm = false;
-            LimpiarFormulario();
             await CargarHabitaciones();
         }
         catch

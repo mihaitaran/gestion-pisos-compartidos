@@ -264,13 +264,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
-
             var user = await AuthService.GetUserAsync();
             if (user != null)
             {
@@ -350,12 +343,28 @@ else
 
     private List<TareaDTO> ObtenerTareasDia(DateTime dia)
     {
-        return tareas.Where(t =>
+        var tareasDelDia = new List<TareaDTO>();
+
+        foreach (var t in tareas)
         {
             if (DateTime.TryParse(t.FechaProgramada, out var fecha))
-                return fecha.Date == dia.Date;
-            return false;
-        }).ToList();
+            {
+                if (fecha.Date == dia.Date)
+                {
+                    tareasDelDia.Add(t);
+                }
+                else if (t.Recurrente && t.FrecuenciaDias > 0 && dia.Date >= fecha.Date && !t.Completada)
+                {
+                    var diferencia = (dia.Date - fecha.Date).Days;
+                    if (diferencia > 0 && diferencia % t.FrecuenciaDias == 0)
+                    {
+                        tareasDelDia.Add(t);
+                    }
+                }
+            }
+        }
+
+        return tareasDelDia;
     }
 
     private void MostrarDetalleTarea(TareaDTO tarea)

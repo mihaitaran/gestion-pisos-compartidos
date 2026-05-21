@@ -34,34 +34,29 @@
     private bool mostrarLayout = false;
     private bool drawerOpen = true;
 
-    protected override void OnParametersSet()
-    {
-        var uri = Navigation.Uri.ToLower();
-        mostrarLayout = !uri.Contains("/login") && !uri.Contains("/register");
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await ActualizarEstado();
-        }
-    }
-
-    private async Task ActualizarEstado()
+    protected override async Task OnParametersSetAsync()
     {
         var uri = Navigation.Uri.ToLower();
         mostrarLayout = !uri.Contains("/login") && !uri.Contains("/register");
 
         if (mostrarLayout)
         {
-            usuario = await AuthService.GetUserAsync();
+            try
+            {
+                var autenticado = await AuthService.IsAuthenticatedAsync();
+                if (!autenticado)
+                {
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+                usuario = await AuthService.GetUserAsync();
+            }
+            catch { }
         }
         else
         {
             usuario = null;
         }
-        StateHasChanged();
     }
 
     private void ToggleDrawer()

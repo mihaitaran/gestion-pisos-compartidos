@@ -70,12 +70,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await CargarPagos();
             StateHasChanged();
         }

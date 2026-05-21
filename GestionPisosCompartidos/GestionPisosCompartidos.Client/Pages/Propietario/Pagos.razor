@@ -7,7 +7,7 @@
 
 <MudSelect T="int" Value="viviendaSeleccionada" Label="Filtrar por vivienda" Variant="Variant.Outlined"
            Class="mb-4" Style="max-width: 400px;"
-           ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarPagos(); })">
+           ValueChanged="CambiarVivienda">
     <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
     @foreach (var v in viviendas)
     {
@@ -61,12 +61,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await CargarViviendas();
             await CargarPagos();
             StateHasChanged();
@@ -87,6 +81,13 @@ else
         {
             mensaje = "Error al cargar viviendas";
         }
+    }
+
+    private async Task CambiarVivienda(int nuevaVivienda)
+    {
+        viviendaSeleccionada = nuevaVivienda;
+        await CargarPagos();
+        StateHasChanged();
     }
 
     private async Task CargarPagos()

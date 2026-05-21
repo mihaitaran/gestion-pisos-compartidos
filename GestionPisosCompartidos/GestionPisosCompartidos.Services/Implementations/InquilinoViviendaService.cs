@@ -39,6 +39,17 @@ namespace GestionPisosCompartidos.Services.Implementations
                 throw new InvalidOperationException("El inquilino ya tiene una vivienda activa asignada");
             }
 
+            if (inquilinoVivienda.HabitacionId != null)
+            {
+                var inquilinosVivienda = await _repository.GetByViviendaIdAsync(inquilinoVivienda.ViviendaId);
+                var habitacionOcupada = inquilinosVivienda.Any(iv => iv.Activo && iv.HabitacionId == inquilinoVivienda.HabitacionId);
+
+                if (habitacionOcupada)
+                {
+                    throw new InvalidOperationException("Esta habitación ya está asignada a otro inquilino");
+                }
+            }
+
             inquilinoVivienda.Activo = true;
             inquilinoVivienda.FechaInicio = DateOnly.FromDateTime(DateTime.UtcNow);
             return await _repository.CreateAsync(inquilinoVivienda);

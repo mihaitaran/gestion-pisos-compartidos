@@ -24,10 +24,21 @@ namespace GestionPisosCompartidos.Client.Services
             }
             catch
             {
-
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                try
+                {
+                    await _localStorage.RemoveItemAsync("jwt_token");
+                    await _localStorage.RemoveItemAsync("user_data");
+                }
+                catch { }
+            }
+
+            return response;
         }
     }
 }

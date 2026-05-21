@@ -86,12 +86,6 @@ else if (rol == "Inquilino" && viviendaActiva == null)
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await IniciarSignalR();
             await CargarViviendas();
             StateHasChanged();

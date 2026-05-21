@@ -35,10 +35,11 @@ namespace GestionPisosCompartidos.Repositories.Implementations
         {
             return await _context.Gastos
                 .Where(g => g.ViviendaId == viviendaId)
-                .Include(g => g.CreadoPor)
                 .Include(g => g.Vivienda)
+                .Include(g => g.CreadoPor)
                 .Include(g => g.Pagos)
                     .ThenInclude(p => p.Inquilino)
+                .AsSplitQuery()
                 .ToListAsync();
         }
 

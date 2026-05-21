@@ -29,15 +29,11 @@
     {
         if (firstRender)
         {
-            var uri = Navigation.Uri.ToLower();
-            if (!uri.Contains("/login") && !uri.Contains("/register"))
+            var user = await AuthService.GetUserAsync();
+            if (user != null)
             {
-                var user = await AuthService.GetUserAsync();
-                if (user != null)
-                {
-                    rol = user.Rol;
-                    StateHasChanged();
-                }
+                rol = user.Rol;
+                StateHasChanged();
             }
         }
     }

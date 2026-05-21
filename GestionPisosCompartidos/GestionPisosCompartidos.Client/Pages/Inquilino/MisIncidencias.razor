@@ -6,7 +6,8 @@
 <MudText Typo="Typo.h4" Class="mb-4">Mis incidencias</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4">
+           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4"
+           Disabled="@(viviendaActiva == null)">
     @(mostrarForm ? "Cancelar" : "Reportar incidencia")
 </MudButton>
 
@@ -100,12 +101,6 @@ else
     {
         if (firstRender)
         {
-            var autenticado = await AuthService.IsAuthenticatedAsync();
-            if (!autenticado)
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
             await CargarDatos();
             StateHasChanged();
         }
