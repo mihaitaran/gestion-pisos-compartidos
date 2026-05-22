@@ -27,6 +27,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
         {
             return await _context.Habitaciones
                 .Include(h => h.Vivienda)
+                .Include(h => h.InquilinosVivienda)
                 .FirstOrDefaultAsync(h => h.Id == id);
         }
 

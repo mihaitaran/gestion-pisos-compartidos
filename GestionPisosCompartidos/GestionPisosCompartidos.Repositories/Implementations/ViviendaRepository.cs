@@ -65,10 +65,29 @@ namespace GestionPisosCompartidos.Repositories.Implementations
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var vivienda = await _context.Viviendas.FindAsync(id);
+            var vivienda = await _context.Viviendas
+                .Include(v => v.Gastos)
+                    .ThenInclude(g => g.Pagos)
+                .Include(v => v.Incidencia)
+                .Include(v => v.TareasCalendarios)
+                .Include(v => v.Mensajes)
+                .Include(v => v.InquilinosVivienda)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
             if (vivienda == null) return false;
 
+            // Borrar pagos de cada gasto
+            foreach (var gasto in vivienda.Gastos)
+            {
+                _context.Pagos.RemoveRange(gasto.Pagos);
+            }
+            _context.Gastos.RemoveRange(vivienda.Gastos);
+            _context.Incidencias.RemoveRange(vivienda.Incidencia);
+            _context.TareasCalendarios.RemoveRange(vivienda.TareasCalendarios);
+            _context.Mensajes.RemoveRange(vivienda.Mensajes);
+            _context.InquilinosViviendas.RemoveRange(vivienda.InquilinosVivienda.Where(iv => !iv.Activo));
             _context.Viviendas.Remove(vivienda);
+
             await _context.SaveChangesAsync();
             return true;
         }

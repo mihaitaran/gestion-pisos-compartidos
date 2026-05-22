@@ -232,7 +232,20 @@ else
         try
         {
             var response = await Http.DeleteAsync($"api/viviendas/{id}");
-            mensaje = response.IsSuccessStatusCode ? "Vivienda eliminada" : "Error al eliminar";
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Vivienda eliminada";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                if (error.Contains("inquilinos"))
+                    mensaje = "No se puede eliminar una vivienda con inquilinos activos";
+                else if (error.Contains("habitaciones"))
+                    mensaje = "No se puede eliminar una vivienda con habitaciones. Elimina las habitaciones primero";
+                else
+                    mensaje = "Error al eliminar";
+            }
             await CargarViviendas();
         }
         catch

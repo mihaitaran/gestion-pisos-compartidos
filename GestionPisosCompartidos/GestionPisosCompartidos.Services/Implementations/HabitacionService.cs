@@ -40,11 +40,7 @@ namespace GestionPisosCompartidos.Services.Implementations
             var habitacion = await _repository.GetByIdAsync(id);
             if (habitacion == null) return false;
 
-            // Comprobar si tiene inquilinos asignados
-            var habitaciones = await _repository.GetByViviendaIdAsync(habitacion.ViviendaId);
-            var estaHabitacion = habitaciones.FirstOrDefault(h => h.Id == id);
-
-            if (estaHabitacion?.InquilinosVivienda != null && estaHabitacion.InquilinosVivienda.Any(iv => iv.Activo))
+            if (habitacion.InquilinosVivienda.Any(iv => iv.Activo))
             {
                 throw new InvalidOperationException("No se puede eliminar una habitación con un inquilino asignado");
             }
