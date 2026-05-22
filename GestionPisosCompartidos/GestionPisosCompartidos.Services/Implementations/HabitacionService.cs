@@ -27,14 +27,6 @@ namespace GestionPisosCompartidos.Services.Implementations
 
         public async Task<Habitacion> CreateAsync(Habitacion habitacion)
         {
-            var vivienda = await _viviendaRepository.GetByIdAsync(habitacion.ViviendaId);
-            if (vivienda == null)
-                throw new InvalidOperationException("La vivienda no existe");
-
-            var habitacionesExistentes = await _repository.GetByViviendaIdAsync(habitacion.ViviendaId);
-            if (habitacionesExistentes.Count >= vivienda.NumHabitaciones)
-                throw new InvalidOperationException($"La vivienda solo tiene {vivienda.NumHabitaciones} habitaciones");
-
             return await _repository.CreateAsync(habitacion);
         }
 

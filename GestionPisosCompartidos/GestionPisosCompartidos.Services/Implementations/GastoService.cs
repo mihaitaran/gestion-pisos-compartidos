@@ -29,13 +29,11 @@ namespace GestionPisosCompartidos.Services.Implementations
 
             if (inquilinosIds != null && inquilinosIds.Count > 0)
             {
-                // Usar los inquilinos seleccionados
                 var todosInquilinos = await _inquilinoViviendaRepository.GetActivosByViviendaIdAsync(gasto.ViviendaId);
                 inquilinos = todosInquilinos.Where(iv => inquilinosIds.Contains(iv.InquilinoId)).ToList();
             }
             else
             {
-                // Repartir entre todos los inquilinos activos
                 inquilinos = await _inquilinoViviendaRepository.GetActivosByViviendaIdAsync(gasto.ViviendaId);
             }
 

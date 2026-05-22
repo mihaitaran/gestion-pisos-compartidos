@@ -51,10 +51,13 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             if (existente == null) return null;
 
             existente.Direccion = vivienda.Direccion;
+            existente.Numero = vivienda.Numero;
+            existente.Piso = vivienda.Piso;
+            existente.Puerta = vivienda.Puerta;
+            existente.Escalera = vivienda.Escalera;
             existente.Ciudad = vivienda.Ciudad;
             existente.CodigoPostal = vivienda.CodigoPostal;
             existente.Descripcion = vivienda.Descripcion;
-            existente.NumHabitaciones = vivienda.NumHabitaciones;
 
             await _context.SaveChangesAsync();
             return existente;

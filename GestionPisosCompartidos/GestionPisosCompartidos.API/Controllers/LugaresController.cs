@@ -34,5 +34,12 @@ namespace GestionPisosCompartidos.API.Controllers
             if (resultado == null) return NotFound(new { message = "No se encontró la dirección" });
             return Ok(new { latitud = resultado.Value.lat, longitud = resultado.Value.lng });
         }
+
+        [HttpGet("autocompletar")]
+        public async Task<ActionResult> Autocompletar([FromQuery] string direccion, [FromQuery] string? ciudad = null)
+        {
+            var resultado = await _service.AutocompletarDireccionAsync(direccion, ciudad);
+            return Ok(resultado);
+        }
     }
 }

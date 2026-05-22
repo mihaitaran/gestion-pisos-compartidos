@@ -6,19 +6,15 @@ namespace GestionPisosCompartidos.Models.Entities;
 public partial class Vivienda
 {
     public int Id { get; set; }
-
     public string Direccion { get; set; } = null!;
-
+    public string? Numero { get; set; }
+    public string? Piso { get; set; }
+    public string? Puerta { get; set; }
+    public string? Escalera { get; set; }
     public string Ciudad { get; set; } = null!;
-
     public string CodigoPostal { get; set; } = null!;
-
     public string? Descripcion { get; set; }
-
-    public int NumHabitaciones { get; set; }
-
     public int PropietarioId { get; set; }
-
     public DateTime FechaCreacion { get; set; }
 
     public virtual ICollection<Habitacion> Habitaciones { get; set; } = new List<Habitacion>();

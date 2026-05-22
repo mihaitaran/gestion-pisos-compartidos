@@ -51,10 +51,13 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.PropietarioId);
 
             entity.Property(e => e.Direccion).HasMaxLength(300);
+            entity.Property(e => e.Numero).HasMaxLength(10);
+            entity.Property(e => e.Piso).HasMaxLength(10);
+            entity.Property(e => e.Puerta).HasMaxLength(10);
+            entity.Property(e => e.Escalera).HasMaxLength(10);
             entity.Property(e => e.Ciudad).HasMaxLength(100);
             entity.Property(e => e.CodigoPostal).HasMaxLength(10);
             entity.Property(e => e.Descripcion).HasMaxLength(500);
-            entity.Property(e => e.NumHabitaciones).HasDefaultValue(1);
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.Propietario).WithMany(p => p.Vivienda)

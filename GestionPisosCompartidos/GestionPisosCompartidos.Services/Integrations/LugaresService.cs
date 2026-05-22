@@ -115,5 +115,51 @@ namespace GestionPisosCompartidos.Services.Integrations
                 _ => "\"shop\"=\"supermarket\""
             };
         }
+
+        public async Task<List<SugerenciaDireccionDTO>> AutocompletarDireccionAsync(string direccion, string? ciudad = null)
+        {
+            var query = !string.IsNullOrEmpty(ciudad) ? $"{direccion}, {ciudad}, España" : $"{direccion}, España";
+            var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=5&addressdetails=1";
+
+            var response = await _httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(content);
+
+            var sugerencias = new List<SugerenciaDireccionDTO>();
+
+            foreach (var result in json.RootElement.EnumerateArray())
+            {
+                var nombre = result.GetProperty("display_name").GetString() ?? "";
+                var address = result.TryGetProperty("address", out var addr) ? addr : default;
+
+                var calle = "";
+                var numero = "";
+                var ciudadResult = "";
+                var cp = "";
+
+                if (address.ValueKind != JsonValueKind.Undefined)
+                {
+                    calle = address.TryGetProperty("road", out var road) ? road.GetString() ?? "" : "";
+                    numero = address.TryGetProperty("house_number", out var num) ? num.GetString() ?? "" : "";
+                    ciudadResult = address.TryGetProperty("city", out var city) ? city.GetString() ?? "" :
+                                  address.TryGetProperty("town", out var town) ? town.GetString() ?? "" : "";
+                    cp = address.TryGetProperty("postcode", out var postcode) ? postcode.GetString() ?? "" : "";
+                }
+
+                if (!string.IsNullOrEmpty(calle))
+                {
+                    sugerencias.Add(new SugerenciaDireccionDTO
+                    {
+                        Nombre = nombre,
+                        Calle = calle,
+                        Numero = numero,
+                        Ciudad = ciudadResult,
+                        CodigoPostal = cp
+                    });
+                }
+            }
+
+            return sugerencias;
+        }
     }
 }

@@ -18,16 +18,38 @@
 
             <MudGrid>
                 <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="direccion" Label="Dirección" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="direccion" Label="Dirección (calle)" Variant="Variant.Outlined"
+                                  TextChanged="BuscarDirecciones" Immediate="true" />
+                    @if (sugerencias.Count > 0)
+                    {
+                        <MudPaper Elevation="4" Class="pa-0" Style="position: absolute; z-index: 10; width: 100%; max-height: 200px; overflow-y: auto;">
+                            @foreach (var s in sugerencias)
+                            {
+                                <MudButton Style="text-transform: none; justify-content: flex-start; width: 100%;"
+                                           OnClick="() => SeleccionarDireccion(s)">
+                                    <MudText Typo="Typo.body2">@s.Nombre</MudText>
+                                </MudButton>
+                            }
+                        </MudPaper>
+                    }
                 </MudItem>
-                <MudItem xs="12" sm="6">
+                <MudItem xs="6" sm="2">
+                    <MudTextField @bind-Value="numero" Label="Número" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" sm="2">
+                    <MudTextField @bind-Value="piso" Label="Piso" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" sm="1">
+                    <MudTextField @bind-Value="puerta" Label="Puerta" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" sm="1">
+                    <MudTextField @bind-Value="escalera" Label="Escalera" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="ciudad" Label="Ciudad" Variant="Variant.Outlined" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="codigoPostal" Label="Código postal" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudNumericField @bind-Value="numHabitaciones" Label="Nº Habitaciones" Variant="Variant.Outlined" Min="1" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="descripcion" Label="Descripción" Variant="Variant.Outlined" />
@@ -59,14 +81,12 @@ else
             <MudTh>Dirección</MudTh>
             <MudTh>Ciudad</MudTh>
             <MudTh>C.P.</MudTh>
-            <MudTh>Habitaciones</MudTh>
             <MudTh>Acciones</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@context.Direccion</MudTd>
+            <MudTd>@context.Direccion @context.Numero, @context.Piso @context.Puerta @(!string.IsNullOrEmpty(context.Escalera) ? $"Esc. {context.Escalera}" : "")</MudTd>
             <MudTd>@context.Ciudad</MudTd>
             <MudTd>@context.CodigoPostal</MudTd>
-            <MudTd>@context.NumHabitaciones</MudTd>
             <MudTd>
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarVivienda(context)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarVivienda(context.Id)" />
@@ -85,10 +105,13 @@ else
     private ViviendaDTO? viviendaEditando = null;
 
     private string direccion = "";
+    private string numero = "";
+    private string piso = "";
+    private string puerta = "";
+    private string escalera = "";
     private string ciudad = "";
     private string codigoPostal = "";
     private string descripcion = "";
-    private int numHabitaciones = 1;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -135,31 +158,53 @@ else
                 var data = new
                 {
                     Direccion = direccion,
+                    Numero = numero,
+                    Piso = piso,
+                    Puerta = puerta,
+                    Escalera = escalera,
                     Ciudad = ciudad,
                     CodigoPostal = codigoPostal,
-                    Descripcion = descripcion,
-                    NumHabitaciones = numHabitaciones
+                    Descripcion = descripcion
                 };
                 var response = await Http.PutAsJsonAsync($"api/viviendas/{viviendaEditando.Id}", data);
-                mensaje = response.IsSuccessStatusCode ? "Vivienda actualizada" : "Error al actualizar";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Vivienda actualizada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    mensaje = "Error al actualizar";
+                }
             }
             else
             {
                 var data = new
                 {
                     Direccion = direccion,
+                    Numero = numero,
+                    Piso = piso,
+                    Puerta = puerta,
+                    Escalera = escalera,
                     Ciudad = ciudad,
                     CodigoPostal = codigoPostal,
                     Descripcion = descripcion,
-                    NumHabitaciones = numHabitaciones,
                     PropietarioId = user.UsuarioId
                 };
                 var response = await Http.PostAsJsonAsync("api/viviendas", data);
-                mensaje = response.IsSuccessStatusCode ? "Vivienda creada" : "Error al crear";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Vivienda creada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    mensaje = "Error al crear";
+                }
             }
 
-            mostrarForm = false;
-            LimpiarFormulario();
             await CargarViviendas();
         }
         catch
@@ -172,10 +217,13 @@ else
     {
         viviendaEditando = v;
         direccion = v.Direccion;
+        numero = v.Numero ?? "";
+        piso = v.Piso ?? "";
+        puerta = v.Puerta ?? "";
+        escalera = v.Escalera ?? "";
         ciudad = v.Ciudad;
         codigoPostal = v.CodigoPostal;
         descripcion = v.Descripcion ?? "";
-        numHabitaciones = v.NumHabitaciones;
         mostrarForm = true;
     }
 
@@ -197,9 +245,62 @@ else
     {
         viviendaEditando = null;
         direccion = "";
+        numero = "";
+        piso = "";
+        puerta = "";
+        escalera = "";
         ciudad = "";
         codigoPostal = "";
         descripcion = "";
-        numHabitaciones = 1;
+    }
+
+    private List<SugerenciaDireccion> sugerencias = new();
+    private System.Timers.Timer? debounceTimer;
+
+    private async Task BuscarDirecciones(string valor)
+    {
+        direccion = valor;
+        sugerencias = new();
+
+        if (string.IsNullOrEmpty(valor) || valor.Length < 3) return;
+
+        // Debounce: esperar 500ms después de que deje de escribir
+        debounceTimer?.Stop();
+        debounceTimer = new System.Timers.Timer(500);
+        debounceTimer.AutoReset = false;
+        debounceTimer.Elapsed += async (s, e) =>
+        {
+            try
+            {
+                var response = await Http.GetAsync($"api/lugares/autocompletar?direccion={Uri.EscapeDataString(valor)}&ciudad={Uri.EscapeDataString(ciudad)}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultado = await response.Content.ReadFromJsonAsync<List<SugerenciaDireccion>>();
+                    sugerencias = resultado ?? new();
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+            catch { }
+        };
+        debounceTimer.Start();
+    }
+
+    private void SeleccionarDireccion(SugerenciaDireccion s)
+    {
+        direccion = s.Calle;
+        if (!string.IsNullOrEmpty(s.Numero)) numero = s.Numero;
+        if (!string.IsNullOrEmpty(s.Ciudad)) ciudad = s.Ciudad;
+        if (!string.IsNullOrEmpty(s.CodigoPostal)) codigoPostal = s.CodigoPostal;
+        sugerencias = new();
+    }
+
+    private class SugerenciaDireccion
+    {
+        public string Nombre { get; set; } = "";
+        public string Calle { get; set; } = "";
+        public string? Numero { get; set; }
+        public string? Ciudad { get; set; }
+        public string? CodigoPostal { get; set; }
     }
 }
