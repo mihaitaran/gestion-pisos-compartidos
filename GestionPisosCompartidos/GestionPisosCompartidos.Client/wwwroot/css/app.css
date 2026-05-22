@@ -1,8 +1,8 @@
 html, body {
-    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #F5F5F5;
+font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+margin: 0;
+padding: 0;
+background-color: #F5F5F5;
 }
 
 h1:focus {
@@ -118,18 +118,18 @@ text-align: start;
 }
 
 .login-page {
-display: flex;
-justify-content: center;
-align-items: center;
-min-height: 100vh;
-background: linear-gradient(135deg, #1565C0 0%, #00897B 100%);
-padding: 20px;
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1565C0 0%, #00897B 100%);
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
 }
 
 .login-card {
@@ -140,7 +140,7 @@ border-radius: 12px;
 }
 
 .w-100 {
-width: 100%;
+    width: 100%;
 }
 
 .menu-card {
@@ -148,19 +148,19 @@ width: 100%;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-    .menu-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
+.menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
 
 .calendario-celda {
     border: 1px solid #e0e0e0;
     transition: background-color 0.2s;
 }
 
-    .calendario-celda:hover {
-        background-color: #f5f5f5;
-    }
+.calendario-celda:hover {
+    background-color: #f5f5f5;
+}
 
 .calendario-hoy {
     color: #1565C0;
@@ -182,10 +182,10 @@ width: 100%;
     height: 100%;
 }
 
-    .menu-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    }
+.menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
 
 .menu-welcome {
     background: linear-gradient(135deg, #1565C0 0%, #00897B 100%);
@@ -194,4 +194,13 @@ width: 100%;
     padding: 32px;
     margin-top: 60px;
     margin-bottom: 24px;
+}
+
+.lugar-card {
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.lugar-card:hover {
+    transform: translateY(-4px);
 }

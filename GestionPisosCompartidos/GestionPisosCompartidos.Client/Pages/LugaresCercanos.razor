@@ -1,0 +1,227 @@
+﻿@page "/lugares"
+@inject HttpClient Http
+@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" Class="mb-4">Lugares cercanos</MudText>
+
+@if (rol == "Propietario" && viviendas.Count > 0)
+{
+    <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined"
+               Class="mb-4" Style="max-width: 400px;"
+               ValueChanged="CambiarVivienda">
+        <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
+        @foreach (var v in viviendas)
+        {
+            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+        }
+    </MudSelect>
+}
+
+@if (viviendaDireccion != null)
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        Buscando cerca de: @viviendaDireccion
+    </MudAlert>
+}
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect @bind-Value="tipoSeleccionado" Label="Tipo de lugar" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("supermarket")">Supermercados</MudSelectItem>
+            <MudSelectItem Value="@("pharmacy")">Farmacias</MudSelectItem>
+            <MudSelectItem Value="@("hospital")">Hospitales</MudSelectItem>
+            <MudSelectItem Value="@("restaurant")">Restaurantes</MudSelectItem>
+            <MudSelectItem Value="@("gym")">Gimnasios</MudSelectItem>
+            <MudSelectItem Value="@("park")">Parques</MudSelectItem>
+            <MudSelectItem Value="@("school")">Colegios</MudSelectItem>
+            <MudSelectItem Value="@("cafe")">Cafeterías</MudSelectItem>
+            <MudSelectItem Value="@("bank")">Bancos</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudNumericField @bind-Value="radio" Label="Radio (metros)" Variant="Variant.Outlined" Min="500" Max="5000" />
+    </MudItem>
+    <MudItem xs="12" sm="4" Class="d-flex align-center">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search"
+                   OnClick="BuscarLugares" Disabled="@(buscando || latitud == 0)">
+            @(buscando ? "Buscando..." : "Buscar")
+        </MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">@mensaje</MudAlert>
+}
+
+@if (buscando)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (lugares.Count > 0)
+{
+    <MudText Typo="Typo.subtitle1" Class="mb-3">@lugares.Count lugares encontrados</MudText>
+    <MudGrid>
+        @foreach (var lugar in lugares)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="lugar-card">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@lugar.Nombre</MudText>
+                        @if (!string.IsNullOrEmpty(lugar.Direccion))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">@lugar.Direccion</MudText>
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Map"
+                                   Href="@($"https://www.openstreetmap.org/?mlat={lugar.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}&mlon={lugar.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}#map=18/{lugar.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}/{lugar.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}")"
+                                   Target="_blank">Ver en mapa</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private List<LugarDTO> lugares = new();
+    private List<ViviendaDTO> viviendas = new();
+    private string tipoSeleccionado = "supermarket";
+    private int radio = 1500;
+    private int viviendaSeleccionada = 0;
+    private bool buscando = false;
+    private string mensaje = "";
+    private string? viviendaDireccion = null;
+    private double latitud = 0;
+    private double longitud = 0;
+    private string rol = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CargarViviendas();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarViviendas()
+    {
+        try
+        {
+            var user = await AuthService.GetUserAsync();
+            if (user == null) return;
+
+            rol = user.Rol;
+
+            if (rol == "Propietario")
+            {
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+            }
+            else
+            {
+                var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                var activa = asignaciones.FirstOrDefault(a => a.Activo);
+                if (activa?.Vivienda != null)
+                {
+                    await GeocodificarVivienda(activa.Vivienda);
+                }
+                else
+                {
+                    mensaje = "No tienes una vivienda asignada";
+                }
+            }
+        }
+        catch
+        {
+            mensaje = "Error al cargar viviendas";
+        }
+    }
+
+    private async Task CambiarVivienda(int nuevaVivienda)
+    {
+        viviendaSeleccionada = nuevaVivienda;
+        latitud = 0;
+        longitud = 0;
+        viviendaDireccion = null;
+        lugares = new();
+        mensaje = "";
+
+        if (viviendaSeleccionada > 0)
+        {
+            var vivienda = viviendas.FirstOrDefault(v => v.Id == viviendaSeleccionada);
+            if (vivienda != null)
+            {
+                await GeocodificarVivienda(vivienda);
+            }
+        }
+    }
+
+    private async Task GeocodificarVivienda(ViviendaDTO vivienda)
+    {
+        var direccionCompleta = $"{vivienda.Direccion}, {vivienda.CodigoPostal} {vivienda.Ciudad}, España";
+        viviendaDireccion = $"{vivienda.Direccion}, {vivienda.Ciudad}";
+
+        try
+        {
+            var response = await Http.GetAsync($"api/lugares/geocodificar?direccion={Uri.EscapeDataString(direccionCompleta)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var json = System.Text.Json.JsonDocument.Parse(content);
+                latitud = json.RootElement.GetProperty("latitud").GetDouble();
+                longitud = json.RootElement.GetProperty("longitud").GetDouble();
+            }
+            else
+            {
+                mensaje = "No se pudo encontrar la dirección de la vivienda";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al geocodificar la dirección";
+        }
+    }
+
+    private async Task BuscarLugares()
+    {
+        if (latitud == 0 && longitud == 0)
+        {
+            mensaje = "No se pudo determinar la ubicación";
+            return;
+        }
+
+        buscando = true;
+        lugares = new();
+        mensaje = "";
+
+        try
+        {
+            var response = await Http.GetAsync($"api/lugares?latitud={latitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}&longitud={longitud.ToString(System.Globalization.CultureInfo.InvariantCulture)}&tipo={tipoSeleccionado}&radio={radio}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                lugares = await response.Content.ReadFromJsonAsync<List<LugarDTO>>() ?? new();
+
+                if (lugares.Count == 0)
+                {
+                    mensaje = "No se encontraron lugares de este tipo en el radio indicado";
+                }
+            }
+            else
+            {
+                mensaje = "Error al buscar lugares";
+            }
+        }
+        catch
+        {
+            mensaje = "Error al conectar con el servicio";
+        }
+
+        buscando = false;
+    }
+}

@@ -7,6 +7,7 @@ using GestionPisosCompartidos.Services.Implementations;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using GestionPisosCompartidos.Services.Integrations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IInquilinoViviendaService, InquilinoViviendaService>(
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHabitacionService, HabitacionService>();
 builder.Services.AddScoped<IMensajeService, MensajeService>();
+builder.Services.AddScoped<ILugaresService, LugaresService>();
 
 builder.Services.AddSignalR();
 
