@@ -5,26 +5,32 @@
 <MudLayout>
     @if (mostrarLayout)
     {
-        <MudAppBar Elevation="1">
+        <MudAppBar Elevation="2" Style="background: linear-gradient(90deg, #1565C0, #0D47A1);">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-            <MudText Typo="Typo.h6">Gestión Pisos Compartidos</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight: 600;">Gestión Pisos Compartidos</MudText>
             <MudSpacer />
             @if (usuario != null)
             {
-                <MudText Class="mr-4">@usuario.Nombre (@usuario.Rol)</MudText>
-                <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="CerrarSesion">Cerrar sesión</MudButton>
+                <MudChip T="string" Size="Size.Small" Style="background: rgba(255,255,255,0.2); color: white;">
+                    @usuario.Rol
+                </MudChip>
+                <MudText Class="mx-3" Style="color: white;">@usuario.Nombre</MudText>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                           Style="color: white; border-color: rgba(255,255,255,0.5);"
+                           OnClick="CerrarSesion">Cerrar sesión</MudButton>
             }
         </MudAppBar>
 
-        <MudDrawer @bind-Open="drawerOpen" Elevation="2">
-            <MudDrawerHeader>
-                <MudText Typo="Typo.h6">Menú</MudText>
-            </MudDrawerHeader>
+        <MudDrawer @bind-Open="drawerOpen" Elevation="3" ClipMode="DrawerClipMode.Always" Breakpoint="Breakpoint.Md" Variant="DrawerVariant.Responsive">
+            <div class="sidebar-header">
+                <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Large" Style="color: white;" />
+                <MudText Typo="Typo.subtitle1" Style="color: white; font-weight: 600;">Menú</MudText>
+            </div>
             <NavMenu />
         </MudDrawer>
     }
 
-    <MudMainContent Class="pa-4">
+    <MudMainContent Class="pa-4" Style="background: var(--color-bg); min-height: 100vh;">
         @Body
     </MudMainContent>
 </MudLayout>

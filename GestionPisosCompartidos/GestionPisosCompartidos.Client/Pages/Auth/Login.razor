@@ -3,14 +3,12 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-
 <div class="login-page">
-    <MudCard Class="login-card" Elevation="4">
-        <MudCardHeader>
-            <MudText Typo="Typo.h4" Align="Align.Center" Class="w-100">Gestión Pisos</MudText>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4">Iniciar sesión</MudText>
+    <div class="login-wrapper">
+        <div class="login-image"></div>
+        <div class="login-form">
+            <MudText Typo="Typo.h4" Class="text-gradient mb-2" Align="Align.Center">Gestión Pisos</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Inicia sesión en tu cuenta</MudText>
 
             @if (!string.IsNullOrEmpty(mensajeError))
             {
@@ -23,8 +21,9 @@
             <MudTextField @bind-Value="password" Label="Contraseña" Variant="Variant.Outlined"
                           InputType="InputType.Password" Class="mb-4" />
 
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="w-100"
-                       OnClick="Acceso" Disabled="@cargando">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mb-4"
+                       OnClick="Acceso" Disabled="@cargando"
+                       Style="width: 100%; height: 48px; border-radius: 8px; font-size: 1rem;">
                 @if (cargando)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -35,11 +34,12 @@
                     <span>Entrar</span>
                 }
             </MudButton>
-        </MudCardContent>
-        <MudCardActions Class="justify-center">
-            <MudLink Href="/register">¿No tienes cuenta? Regístrate aquí</MudLink>
-        </MudCardActions>
-    </MudCard>
+
+            <MudText Align="Align.Center">
+                <MudLink Href="/register">¿No tienes cuenta? Regístrate aquí</MudLink>
+            </MudText>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -59,7 +59,7 @@
 
             if (success)
             {
-                Navigation.NavigateTo("/menu", forceLoad: true);
+                Navigation.NavigateTo("/dashboard", forceLoad: true);
             }
             else
             {

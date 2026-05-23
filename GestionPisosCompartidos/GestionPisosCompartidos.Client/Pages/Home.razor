@@ -10,7 +10,7 @@
             var autenticado = await AuthService.IsAuthenticatedAsync();
             if (autenticado)
             {
-                Navigation.NavigateTo("/menu");
+                Navigation.NavigateTo("/dashboard");
             }
             else
             {

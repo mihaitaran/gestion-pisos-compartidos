@@ -1,26 +1,30 @@
 ﻿@inject GestionPisosCompartidos.Client.Services.AuthService AuthService
-@inject NavigationManager Navigation
 
-<MudNavMenu>
-    <MudNavLink Href="/menu" Icon="@Icons.Material.Filled.Dashboard">Menu</MudNavLink>
+<MudNavMenu Class="mt-2">
+    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">
+        Dashboard
+    </MudNavLink>
 
     @if (rol == "Propietario")
     {
-        <MudNavLink Href="/viviendas" Icon="@Icons.Material.Filled.Home">Viviendas</MudNavLink>
-        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
-        <MudNavLink Href="/pagos" Icon="@Icons.Material.Filled.Payment">Pagos</MudNavLink>
-        <MudNavLink Href="/incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
+        <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1" Style="color: var(--color-text-secondary);">GESTIÓN</MudText>
+        <MudNavLink Href="/viviendas" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Viviendas</MudNavLink>
+        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt" IconColor="Color.Info">Gastos</MudNavLink>
+        <MudNavLink Href="/pagos" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success">Pagos</MudNavLink>
+        <MudNavLink Href="/incidencias" Icon="@Icons.Material.Filled.Warning" IconColor="Color.Warning">Incidencias</MudNavLink>
     }
     else if (rol == "Inquilino")
     {
-        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt">Gastos</MudNavLink>
-        <MudNavLink Href="/mis-pagos" Icon="@Icons.Material.Filled.Payment">Mis pagos</MudNavLink>
-        <MudNavLink Href="/mis-incidencias" Icon="@Icons.Material.Filled.Warning">Incidencias</MudNavLink>
+        <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1" Style="color: var(--color-text-secondary);">MI VIVIENDA</MudText>
+        <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt" IconColor="Color.Info">Gastos</MudNavLink>
+        <MudNavLink Href="/mis-pagos" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success">Mis pagos</MudNavLink>
+        <MudNavLink Href="/mis-incidencias" Icon="@Icons.Material.Filled.Warning" IconColor="Color.Warning">Incidencias</MudNavLink>
     }
 
-    <MudNavLink Href="/calendario" Icon="@Icons.Material.Filled.CalendarMonth">Calendario</MudNavLink>
-    <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
-    <MudNavLink Href="/lugares" Icon="@Icons.Material.Filled.Place">Lugares cercanos</MudNavLink>
+    <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1" Style="color: var(--color-text-secondary);">HERRAMIENTAS</MudText>
+    <MudNavLink Href="/calendario" Icon="@Icons.Material.Filled.CalendarMonth" IconColor="Color.Primary">Calendario</MudNavLink>
+    <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat" IconColor="Color.Secondary">Chat</MudNavLink>
+    <MudNavLink Href="/lugares" Icon="@Icons.Material.Filled.Place" IconColor="Color.Error">Lugares cercanos</MudNavLink>
 </MudNavMenu>
 
 @code {
