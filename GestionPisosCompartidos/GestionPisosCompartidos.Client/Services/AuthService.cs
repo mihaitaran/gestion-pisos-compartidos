@@ -73,7 +73,18 @@ namespace GestionPisosCompartidos.Client.Services
         public async Task<bool> IsAuthenticatedAsync()
         {
             var token = await GetTokenAsync();
-            return !string.IsNullOrEmpty(token);
+            if (string.IsNullOrEmpty(token)) return false;
+
+            try
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwt = handler.ReadJwtToken(token);
+                return jwt.ValidTo > DateTime.UtcNow;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
