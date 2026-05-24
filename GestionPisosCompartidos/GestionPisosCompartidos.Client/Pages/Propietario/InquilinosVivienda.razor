@@ -142,7 +142,20 @@ else
             };
 
             var response = await Http.PostAsJsonAsync("api/inquilinosviviendas", data);
-            mensaje = response.IsSuccessStatusCode ? "Inquilino asignado" : "Error al asignar";
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Inquilino asignado";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                if (error.Contains("vivienda activa"))
+                    mensaje = "Este inquilino ya tiene una vivienda asignada";
+                else if (error.Contains("habitación ya está"))
+                    mensaje = "Esta habitación ya está ocupada";
+                else
+                    mensaje = "Error al asignar inquilino";
+            }
             mostrarForm = false;
             emailInquilino = "";
             habitacionSeleccionada = 0;

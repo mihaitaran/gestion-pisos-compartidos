@@ -142,7 +142,10 @@ namespace GestionPisosCompartidos.Services.Integrations
                     calle = address.TryGetProperty("road", out var road) ? road.GetString() ?? "" : "";
                     numero = address.TryGetProperty("house_number", out var num) ? num.GetString() ?? "" : "";
                     ciudadResult = address.TryGetProperty("city", out var city) ? city.GetString() ?? "" :
-                                  address.TryGetProperty("town", out var town) ? town.GetString() ?? "" : "";
+                                      address.TryGetProperty("town", out var town) ? town.GetString() ?? "" :
+                                      address.TryGetProperty("village", out var village) ? village.GetString() ?? "" :
+                                      address.TryGetProperty("municipality", out var muni) ? muni.GetString() ?? "" :
+                                      address.TryGetProperty("county", out var county) ? county.GetString() ?? "" : "";
                     cp = address.TryGetProperty("postcode", out var postcode) ? postcode.GetString() ?? "" : "";
                 }
 

@@ -408,7 +408,16 @@ else
                     FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
                 };
                 var response = await Http.PutAsJsonAsync($"api/tareascalendario/{tareaEditando.Id}", data);
-                mensaje = response.IsSuccessStatusCode ? "Tarea actualizada" : "Error al actualizar";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Tarea actualizada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    mensaje = "Error al actualizar tarea";
+                }
             }
             else
             {
@@ -424,11 +433,18 @@ else
                     FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
                 };
                 var response = await Http.PostAsJsonAsync("api/tareascalendario", data);
-                mensaje = response.IsSuccessStatusCode ? "Tarea creada" : "Error al crear";
+                if (response.IsSuccessStatusCode)
+                {
+                    mensaje = "Tarea creada";
+                    mostrarForm = false;
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    mensaje = "Error al crear tarea";
+                }
             }
 
-            mostrarForm = false;
-            LimpiarFormulario();
             await CargarDatos();
         }
         catch

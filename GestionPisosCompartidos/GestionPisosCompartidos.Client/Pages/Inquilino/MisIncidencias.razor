@@ -155,7 +155,6 @@ else
             };
 
             var response = await Http.PostAsJsonAsync("api/incidencias", data);
-
             if (response.IsSuccessStatusCode)
             {
                 mensaje = "Incidencia reportada";

@@ -287,7 +287,6 @@ else
             };
 
             var response = await Http.PostAsJsonAsync("api/gastos", data);
-
             if (response.IsSuccessStatusCode)
             {
                 mensaje = "Gasto registrado";

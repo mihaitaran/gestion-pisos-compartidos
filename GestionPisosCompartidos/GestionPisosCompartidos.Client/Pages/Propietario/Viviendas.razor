@@ -6,7 +6,7 @@
 <MudText Typo="Typo.h4" Class="mb-4">Mis viviendas</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-           OnClick="MostrarFormulario" Class="mb-4">
+           OnClick="MostrarFormulario" Class="mb-4" Disabled="@cargando">
     @(mostrarForm ? "Cancelar" : "Añadir vivienda")
 </MudButton>
 
@@ -17,22 +17,22 @@
             <MudText Typo="Typo.h6" Class="mb-3">@(viviendaEditando != null ? "Editar vivienda" : "Nueva vivienda")</MudText>
 
             <MudGrid>
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="6" Style="position: relative;">
                     <MudTextField @bind-Value="direccion" Label="Dirección (calle)" Variant="Variant.Outlined"
-                                  TextChanged="BuscarDirecciones" Immediate="true" />
-                    @if (sugerencias.Count > 0)
-                    {
-                        <MudPaper Elevation="4" Class="pa-0" Style="position: absolute; z-index: 10; width: 100%; max-height: 200px; overflow-y: auto;">
-                            @foreach (var s in sugerencias)
-                            {
-                                <MudButton Style="text-transform: none; justify-content: flex-start; width: 100%;"
-                                           OnClick="() => SeleccionarDireccion(s)">
-                                    <MudText Typo="Typo.body2">@s.Nombre</MudText>
-                                </MudButton>
-                            }
-                        </MudPaper>
-                    }
-                </MudItem>
+                                  TextChanged="BuscarDirecciones" Immediate="true"
+                                  OnBlur="OcultarSugerencias" />
+                @if (sugerencias.Count > 0 && mostrarSugerencias)
+                {
+                        <MudPaper Elevation="4" Class="autocomplete-dropdown">
+                        @foreach (var s in sugerencias)
+                        {
+                                            <MudListItem T="string" OnClick="() => SeleccionarDireccion(s)" Style="cursor: pointer;">
+                                                <MudText Typo="Typo.body2">@s.Nombre</MudText>
+                                            </MudListItem>
+                        }
+                    </MudPaper>
+                }
+</MudItem>
                 <MudItem xs="6" sm="2">
                     <MudTextField @bind-Value="numero" Label="Número" Variant="Variant.Outlined" />
                 </MudItem>
@@ -269,15 +269,16 @@ else
 
     private List<SugerenciaDireccion> sugerencias = new();
     private System.Timers.Timer? debounceTimer;
+    private bool mostrarSugerencias = false;
 
     private async Task BuscarDirecciones(string valor)
     {
         direccion = valor;
         sugerencias = new();
+        mostrarSugerencias = false;
 
         if (string.IsNullOrEmpty(valor) || valor.Length < 3) return;
 
-        // Debounce: esperar 500ms después de que deje de escribir
         debounceTimer?.Stop();
         debounceTimer = new System.Timers.Timer(500);
         debounceTimer.AutoReset = false;
@@ -291,6 +292,7 @@ else
                 {
                     var resultado = await response.Content.ReadFromJsonAsync<List<SugerenciaDireccion>>();
                     sugerencias = resultado ?? new();
+                    mostrarSugerencias = sugerencias.Count > 0;
                     await InvokeAsync(StateHasChanged);
                 }
             }
@@ -306,6 +308,14 @@ else
         if (!string.IsNullOrEmpty(s.Ciudad)) ciudad = s.Ciudad;
         if (!string.IsNullOrEmpty(s.CodigoPostal)) codigoPostal = s.CodigoPostal;
         sugerencias = new();
+        mostrarSugerencias = false;
+    }
+
+    private async Task OcultarSugerencias()
+    {
+        await Task.Delay(300);
+        mostrarSugerencias = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private class SugerenciaDireccion

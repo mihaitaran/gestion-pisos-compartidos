@@ -147,8 +147,7 @@ else
                 }
                 else
                 {
-                    var error = await response.Content.ReadAsStringAsync();
-                    mensaje = error.Contains("solo tiene") ? "No puedes crear más habitaciones. El límite es el número de habitaciones del piso." : "Error al crear";
+                    mensaje = "Error al crear habitación";
                 }
             }
 
@@ -175,7 +174,18 @@ else
         try
         {
             var response = await Http.DeleteAsync($"api/habitaciones/{id}");
-            mensaje = response.IsSuccessStatusCode ? "Habitación eliminada" : "Error al eliminar";
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Habitación eliminada";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                if (error.Contains("inquilino asignado"))
+                    mensaje = "No se puede eliminar una habitación con un inquilino asignado";
+                else
+                    mensaje = "Error al eliminar";
+            }
             await CargarHabitaciones();
         }
         catch
