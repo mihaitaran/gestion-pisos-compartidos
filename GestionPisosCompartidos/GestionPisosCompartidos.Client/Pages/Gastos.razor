@@ -96,6 +96,12 @@
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
+@if (!cargando && viviendas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">
+        @(rol == "Propietario" ? "No tienes viviendas creadas. Crea una vivienda primero." : "No tienes una vivienda asignada.")
+    </MudAlert>
+}
 else if (gastos.Count == 0)
 {
     <MudAlert Severity="Severity.Normal">No hay gastos registrados.</MudAlert>
@@ -248,21 +254,27 @@ else
 
     private async Task CrearGasto()
     {
-        if (viviendaSeleccionada == 0 || string.IsNullOrEmpty(categoria))
+        if (viviendaSeleccionada == 0)
         {
-            mensaje = "Selecciona vivienda y categoría";
+            mensaje = "Selecciona una vivienda";
             return;
         }
 
-        if (tipoReparto == "seleccionados" && inquilinosSeleccionados.Count == 0)
+        if (string.IsNullOrEmpty(categoria))
         {
-            mensaje = "Selecciona al menos un inquilino";
+            mensaje = "Selecciona una categoría";
             return;
         }
 
         if (inquilinosVivienda.Count == 0)
         {
             mensaje = "No hay inquilinos en esta vivienda para asignar el gasto";
+            return;
+        }
+
+        if (tipoReparto == "seleccionados" && inquilinosSeleccionados.Count == 0)
+        {
+            mensaje = "Selecciona al menos un inquilino";
             return;
         }
 

@@ -5,6 +5,11 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Incidencias</MudText>
 
+@if (!cargando && incidencias.Count == 0 && viviendas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
+}
+
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
@@ -61,6 +66,7 @@ else
     private List<IncidenciaDTO> incidencias = new();
     private bool cargando = true;
     private string mensaje = "";
+    private List<ViviendaDTO> viviendas = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -79,7 +85,7 @@ else
             var user = await AuthService.GetUserAsync();
             if (user != null)
             {
-                var viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+                viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
                 incidencias = new();
                 foreach (var v in viviendas)
                 {

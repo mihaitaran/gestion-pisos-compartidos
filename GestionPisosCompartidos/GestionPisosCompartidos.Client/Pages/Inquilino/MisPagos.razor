@@ -5,6 +5,11 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Mis pagos</MudText>
 
+@if (!cargando && !tieneVivienda)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes una vivienda asignada.</MudAlert>
+}
+
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="Severity.Info" Class="mb-4">@mensaje</MudAlert>
@@ -75,6 +80,8 @@ else
         }
     }
 
+    private bool tieneVivienda = false;
+
     private async Task CargarPagos()
     {
         cargando = true;
@@ -83,7 +90,13 @@ else
             var user = await AuthService.GetUserAsync();
             if (user != null)
             {
-                pagos = await Http.GetFromJsonAsync<List<PagoDTO>>($"api/pagos/inquilino/{user.UsuarioId}") ?? new();
+                var asignaciones = await Http.GetFromJsonAsync<List<InquilinoViviendaDTO>>($"api/inquilinosviviendas/inquilino/{user.UsuarioId}") ?? new();
+                tieneVivienda = asignaciones.Any(a => a.Activo);
+
+                if (tieneVivienda)
+                {
+                    pagos = await Http.GetFromJsonAsync<List<PagoDTO>>($"api/pagos/inquilino/{user.UsuarioId}") ?? new();
+                }
             }
         }
         catch

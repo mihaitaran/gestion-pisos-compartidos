@@ -15,6 +15,11 @@
     }
 </MudSelect>
 
+@if (!cargando && viviendas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
+}
+
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="Severity.Info" Class="mb-4">@mensaje</MudAlert>
