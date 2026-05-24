@@ -96,7 +96,7 @@
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
 }
-@if (!cargando && viviendas.Count == 0)
+else if (!cargando && viviendas.Count == 0)
 {
     <MudAlert Severity="Severity.Warning" Class="mb-4">
         @(rol == "Propietario" ? "No tienes viviendas creadas. Crea una vivienda primero." : "No tienes una vivienda asignada.")
@@ -172,9 +172,17 @@ else
             {
                 rol = user.Rol;
                 usuarioId = user.UsuarioId;
+
                 if (rol == "Propietario")
                 {
                     viviendas = await Http.GetFromJsonAsync<List<ViviendaDTO>>($"api/viviendas/propietario/{user.UsuarioId}") ?? new();
+
+                    gastos = new();
+                    foreach (var v in viviendas)
+                    {
+                        var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                        gastos.AddRange(gastosVivienda);
+                    }
                 }
                 else
                 {
@@ -187,29 +195,17 @@ else
                         viviendas = new List<ViviendaDTO> { activa.Vivienda };
                         viviendaSeleccionada = activa.ViviendaId;
                         await CargarInquilinosVivienda();
-                    }
-                }
 
-                if (rol == "Inquilino")
-                {
-                    var todosGastos = new List<GastoDTO>();
-                    foreach (var v in viviendas)
-                    {
-                        var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
-                        todosGastos.AddRange(gastosVivienda);
-                    }
-                    gastos = todosGastos.Where(g =>
-                        g.Categoria != "Alquiler" ||
-                        g.Pagos.Any(p => p.InquilinoId == usuarioId)
-                    ).ToList();
-                }
-                else
-                {
-                    gastos = new();
-                    foreach (var v in viviendas)
-                    {
-                        var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
-                        gastos.AddRange(gastosVivienda);
+                        var todosGastos = new List<GastoDTO>();
+                        foreach (var v in viviendas)
+                        {
+                            var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
+                            todosGastos.AddRange(gastosVivienda);
+                        }
+                        gastos = todosGastos.Where(g =>
+                            g.Categoria != "Alquiler" ||
+                            g.Pagos.Any(p => p.InquilinoId == usuarioId)
+                        ).ToList();
                     }
                 }
             }
@@ -260,9 +256,21 @@ else
             return;
         }
 
+        if (string.IsNullOrEmpty(concepto))
+        {
+            mensaje = "Añade un concepto";
+            return;
+        }
+
         if (string.IsNullOrEmpty(categoria))
         {
             mensaje = "Selecciona una categoría";
+            return;
+        }
+
+        if (importeTotal <= 0)
+        {
+            mensaje = "El importe debe ser mayor que 0";
             return;
         }
 
@@ -330,7 +338,14 @@ else
         try
         {
             var response = await Http.DeleteAsync($"api/gastos/{id}");
-            mensaje = response.IsSuccessStatusCode ? "Gasto eliminado" : "Error al eliminar";
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Gasto eliminado";
+            }
+            else
+            {
+                mensaje = "Error al eliminar el gasto";
+            }
             await CargarDatos();
         }
         catch

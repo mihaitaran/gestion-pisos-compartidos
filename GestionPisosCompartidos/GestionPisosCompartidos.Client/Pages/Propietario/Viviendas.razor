@@ -148,6 +148,24 @@ else
 
     private async Task GuardarVivienda()
     {
+        if (string.IsNullOrEmpty(direccion))
+        {
+            mensaje = "Introduce una dirección";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(ciudad))
+        {
+            mensaje = "Introduce una ciudad";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(codigoPostal))
+        {
+            mensaje = "Introduce un código postal";
+            return;
+        }
+
         try
         {
             var user = await AuthService.GetUserAsync();
@@ -166,7 +184,9 @@ else
                     CodigoPostal = codigoPostal,
                     Descripcion = descripcion
                 };
+
                 var response = await Http.PutAsJsonAsync($"api/viviendas/{viviendaEditando.Id}", data);
+
                 if (response.IsSuccessStatusCode)
                 {
                     mensaje = "Vivienda actualizada";
@@ -192,7 +212,9 @@ else
                     Descripcion = descripcion,
                     PropietarioId = user.UsuarioId
                 };
+
                 var response = await Http.PostAsJsonAsync("api/viviendas", data);
+
                 if (response.IsSuccessStatusCode)
                 {
                     mensaje = "Vivienda creada";
@@ -267,7 +289,7 @@ else
         descripcion = "";
     }
 
-    private List<SugerenciaDireccion> sugerencias = new();
+    private List<SugerenciaDireccionDTO> sugerencias = new();
     private System.Timers.Timer? debounceTimer;
     private bool mostrarSugerencias = false;
 
@@ -290,7 +312,7 @@ else
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var resultado = await response.Content.ReadFromJsonAsync<List<SugerenciaDireccion>>();
+                    var resultado = await response.Content.ReadFromJsonAsync<List<SugerenciaDireccionDTO>>();
                     sugerencias = resultado ?? new();
                     mostrarSugerencias = sugerencias.Count > 0;
                     await InvokeAsync(StateHasChanged);
@@ -301,7 +323,7 @@ else
         debounceTimer.Start();
     }
 
-    private void SeleccionarDireccion(SugerenciaDireccion s)
+    private void SeleccionarDireccion(SugerenciaDireccionDTO s)
     {
         direccion = s.Calle;
         if (!string.IsNullOrEmpty(s.Numero)) numero = s.Numero;
@@ -318,12 +340,4 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private class SugerenciaDireccion
-    {
-        public string Nombre { get; set; } = "";
-        public string Calle { get; set; } = "";
-        public string? Numero { get; set; }
-        public string? Ciudad { get; set; }
-        public string? CodigoPostal { get; set; }
-    }
 }

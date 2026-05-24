@@ -1,7 +1,6 @@
 ﻿@page "/mis-incidencias"
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
-@inject NavigationManager Navigation
 
 <MudText Typo="Typo.h4" Class="mb-4">Mis incidencias</MudText>
 
@@ -75,10 +74,10 @@ else
         <RowTemplate>
             <MudTd>@context.Titulo</MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
             </MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado ?? "")">@context.Estado</MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoIncidenciaColor(context.Estado ?? "")">@context.Estado</MudChip>
             </MudTd>
             <MudTd>@context.FechaCreacion</MudTd>
         </RowTemplate>
@@ -134,9 +133,21 @@ else
 
     private async Task CrearIncidencia()
     {
-        if (viviendaId == 0 || string.IsNullOrEmpty(titulo))
+        if (viviendaId == 0)
+        {
+            mensaje = "No tienes una vivienda asignada";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(titulo))
         {
             mensaje = "Añade un título";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(descripcion))
+        {
+            mensaje = "Añade una descripción";
             return;
         }
 
@@ -173,29 +184,5 @@ else
         {
             mensaje = "Error al enviar";
         }
-    }
-
-    private Color GetPrioridadColor(string prioridad)
-    {
-        return prioridad switch
-        {
-            "Baja" => Color.Info,
-            "Media" => Color.Warning,
-            "Alta" => Color.Error,
-            "Urgente" => Color.Error,
-            _ => Color.Default
-        };
-    }
-
-    private Color GetEstadoColor(string estado)
-    {
-        return estado switch
-        {
-            "Abierta" => Color.Error,
-            "EnProceso" => Color.Warning,
-            "Resuelta" => Color.Success,
-            "Cerrada" => Color.Default,
-            _ => Color.Default
-        };
     }
 }

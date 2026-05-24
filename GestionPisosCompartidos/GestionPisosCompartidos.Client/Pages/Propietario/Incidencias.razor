@@ -1,14 +1,8 @@
 ﻿@page "/incidencias"
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
-@inject NavigationManager Navigation
 
 <MudText Typo="Typo.h4" Class="mb-4">Incidencias</MudText>
-
-@if (!cargando && incidencias.Count == 0 && viviendas.Count == 0)
-{
-    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
-}
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
@@ -18,6 +12,10 @@
 @if (cargando)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (viviendas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
 }
 else if (incidencias.Count == 0)
 {
@@ -40,10 +38,10 @@ else
             <MudTd>@context.Vivienda?.Direccion</MudTd>
             <MudTd>@context.ReportadaPor?.Nombre @context.ReportadaPor?.Apellidos</MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
             </MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado ?? "")">@context.Estado</MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoIncidenciaColor(context.Estado ?? "")">@context.Estado</MudChip>
             </MudTd>
             <MudTd>@context.FechaCreacion</MudTd>
             <MudTd>
@@ -104,39 +102,25 @@ else
     private async Task CambiarEstado(int id, string nuevoEstado)
     {
         if (string.IsNullOrEmpty(nuevoEstado)) return;
+
         try
         {
             var response = await Http.PatchAsJsonAsync($"api/incidencias/{id}/estado", nuevoEstado);
-            mensaje = response.IsSuccessStatusCode ? "Estado actualizado" : "Error al actualizar";
+
+            if (response.IsSuccessStatusCode)
+            {
+                mensaje = "Estado actualizado";
+            }
+            else
+            {
+                mensaje = "Error al actualizar";
+            }
+
             await CargarIncidencias();
         }
         catch
         {
             mensaje = "Error al cambiar estado";
         }
-    }
-
-    private Color GetPrioridadColor(string prioridad)
-    {
-        return prioridad switch
-        {
-            "Baja" => Color.Info,
-            "Media" => Color.Warning,
-            "Alta" => Color.Error,
-            "Urgente" => Color.Error,
-            _ => Color.Default
-        };
-    }
-
-    private Color GetEstadoColor(string estado)
-    {
-        return estado switch
-        {
-            "Abierta" => Color.Error,
-            "EnProceso" => Color.Warning,
-            "Resuelta" => Color.Success,
-            "Cerrada" => Color.Default,
-            _ => Color.Default
-        };
     }
 }

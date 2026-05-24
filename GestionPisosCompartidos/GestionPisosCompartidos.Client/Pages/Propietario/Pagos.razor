@@ -1,7 +1,6 @@
 ﻿@page "/pagos"
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
-@inject NavigationManager Navigation
 
 <MudText Typo="Typo.h4" Class="mb-4">Estado de pagos</MudText>
 
@@ -15,19 +14,18 @@
     }
 </MudSelect>
 
-@if (!cargando && viviendas.Count == 0)
-{
-    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
-}
-
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <MudAlert Severity="Severity.Info" Class="mb-4">@mensaje</MudAlert>
+    <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
 }
 
 @if (cargando)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (viviendas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No tienes viviendas creadas.</MudAlert>
 }
 else if (pagos.Count == 0)
 {
@@ -48,7 +46,7 @@ else
             <MudTd>@context.Inquilino?.Nombre @context.Inquilino?.Apellidos</MudTd>
             <MudTd>@context.Importe.ToString("F2") €</MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@GetEstadoColor(context.Estado)">@context.Estado</MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(context.Estado)">@context.Estado</MudChip>
             </MudTd>
             <MudTd>@(context.FechaPago ?? "-")</MudTd>
         </RowTemplate>
@@ -130,16 +128,5 @@ else
             mensaje = "Error al cargar pagos";
         }
         cargando = false;
-    }
-
-    private Color GetEstadoColor(string estado)
-    {
-        return estado switch
-        {
-            "Pagado" => Color.Success,
-            "Pendiente" => Color.Warning,
-            "Rechazado" => Color.Error,
-            _ => Color.Default
-        };
     }
 }
