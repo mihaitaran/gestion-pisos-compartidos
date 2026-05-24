@@ -19,6 +19,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             return await _context.InquilinosViviendas
                 .Where(iv => iv.ViviendaId == viviendaId)
                 .Include(iv => iv.Inquilino)
+                .Include(iv => iv.Habitacion)
                 .ToListAsync();
         }
 
@@ -27,6 +28,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             return await _context.InquilinosViviendas
                 .Where(iv => iv.InquilinoId == inquilinoId)
                 .Include(iv => iv.Vivienda)
+                .Include(iv => iv.Habitacion)
                 .ToListAsync();
         }
 
@@ -35,6 +37,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             return await _context.InquilinosViviendas
                 .Where(iv => iv.ViviendaId == viviendaId && iv.Activo == true)
                 .Include(iv => iv.Inquilino)
+                .Include(iv => iv.Habitacion)
                 .ToListAsync();
         }
 
