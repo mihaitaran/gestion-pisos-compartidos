@@ -335,8 +335,9 @@ else
         for (var dia = primerDia; dia <= ultimoDia; dia = dia.AddDays(1))
             diasDelMes.Add(dia);
 
+        int extra = 1;
         while (diasDelMes.Count % 7 != 0)
-            diasDelMes.Add(ultimoDia.AddDays(diasDelMes.Count - diasDelMes.IndexOf(ultimoDia)));
+            diasDelMes.Add(ultimoDia.AddDays(extra++));
     }
 
     private void MesAnterior() { mesActual = mesActual.AddMonths(-1); GenerarDiasMes(); }

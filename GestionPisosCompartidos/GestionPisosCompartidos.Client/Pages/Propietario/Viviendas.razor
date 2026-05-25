@@ -17,22 +17,17 @@
             <MudText Typo="Typo.h6" Class="mb-3">@(viviendaEditando != null ? "Editar vivienda" : "Nueva vivienda")</MudText>
 
             <MudGrid>
-                <MudItem xs="12" sm="6" Style="position: relative;">
-                    <MudTextField @bind-Value="direccion" Label="Dirección (calle)" Variant="Variant.Outlined"
-                                  TextChanged="BuscarDirecciones" Immediate="true"
-                                  OnBlur="OcultarSugerencias" />
-                @if (sugerencias.Count > 0 && mostrarSugerencias)
-                {
-                        <MudPaper Elevation="4" Class="autocomplete-dropdown">
-                        @foreach (var s in sugerencias)
-                        {
-                                            <MudListItem T="string" OnClick="() => SeleccionarDireccion(s)" Style="cursor: pointer;">
-                                                <MudText Typo="Typo.body2">@s.Nombre</MudText>
-                                            </MudListItem>
-                        }
-                    </MudPaper>
-                }
-</MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="SugerenciaDireccionDTO"
+                                     Label="Dirección (calle)"
+                                     Variant="Variant.Outlined"
+                                     SearchFunc="BuscarDirecciones"
+                                     ToStringFunc="@(s => s == null ? "" : $"{s.Calle}, {s.Ciudad} {s.CodigoPostal}")"
+                                     ValueChanged="SeleccionarDireccion"
+                                     DebounceInterval="500"
+                                     MinCharacters="3"
+                                     ResetValueOnEmptyText="true" />
+                </MudItem>
                 <MudItem xs="6" sm="2">
                     <MudTextField @bind-Value="numero" Label="Número" Variant="Variant.Outlined" />
                 </MudItem>
@@ -289,55 +284,28 @@ else
         descripcion = "";
     }
 
-    private List<SugerenciaDireccionDTO> sugerencias = new();
-    private System.Timers.Timer? debounceTimer;
-    private bool mostrarSugerencias = false;
-
-    private async Task BuscarDirecciones(string valor)
+    private async Task<IEnumerable<SugerenciaDireccionDTO>> BuscarDirecciones(string valor, CancellationToken token)
     {
-        direccion = valor;
-        sugerencias = new();
-        mostrarSugerencias = false;
+        if (string.IsNullOrEmpty(valor) || valor.Length < 3) return new List<SugerenciaDireccionDTO>();
 
-        if (string.IsNullOrEmpty(valor) || valor.Length < 3) return;
-
-        debounceTimer?.Stop();
-        debounceTimer = new System.Timers.Timer(500);
-        debounceTimer.AutoReset = false;
-        debounceTimer.Elapsed += async (s, e) =>
+        try
         {
-            try
-            {
-                var response = await Http.GetAsync($"api/lugares/autocompletar?direccion={Uri.EscapeDataString(valor)}&ciudad={Uri.EscapeDataString(ciudad)}");
+            var response = await Http.GetAsync($"api/lugares/autocompletar?direccion={Uri.EscapeDataString(valor)}&ciudad={Uri.EscapeDataString(ciudad)}");
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadFromJsonAsync<List<SugerenciaDireccionDTO>>() ?? new();
+        }
+        catch { }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var resultado = await response.Content.ReadFromJsonAsync<List<SugerenciaDireccionDTO>>();
-                    sugerencias = resultado ?? new();
-                    mostrarSugerencias = sugerencias.Count > 0;
-                    await InvokeAsync(StateHasChanged);
-                }
-            }
-            catch { }
-        };
-        debounceTimer.Start();
+        return new List<SugerenciaDireccionDTO>();
     }
 
     private void SeleccionarDireccion(SugerenciaDireccionDTO s)
     {
+        if (s == null) return;
         direccion = s.Calle;
         if (!string.IsNullOrEmpty(s.Numero)) numero = s.Numero;
         if (!string.IsNullOrEmpty(s.Ciudad)) ciudad = s.Ciudad;
         if (!string.IsNullOrEmpty(s.CodigoPostal)) codigoPostal = s.CodigoPostal;
-        sugerencias = new();
-        mostrarSugerencias = false;
-    }
-
-    private async Task OcultarSugerencias()
-    {
-        await Task.Delay(300);
-        mostrarSugerencias = false;
-        await InvokeAsync(StateHasChanged);
     }
 
 }
