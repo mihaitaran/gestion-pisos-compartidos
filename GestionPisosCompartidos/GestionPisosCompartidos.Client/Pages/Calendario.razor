@@ -172,7 +172,8 @@ else
                         </MudCardContent>
                         <MudCardActions>
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.Check" OnClick="() => CompletarTarea(t.Id)">Completar</MudButton>
+                                       StartIcon="@Icons.Material.Filled.Check" OnClick="() => CompletarTarea(t.Id)"
+                                       Disabled="@(!PuedeCompletar(t))">Completar</MudButton>
                             @if (rol == "Propietario" || t.CreadaPor?.Id == usuarioId)
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarTarea(t)" />
@@ -491,5 +492,13 @@ else
         recurrente = false;
         frecuenciaDias = 7;
         asignadaAId = 0;
+    }
+
+    private bool PuedeCompletar(TareaDTO t)
+    {
+        if (rol == "Propietario") return true;
+        if (t.AsignadaA?.Id == usuarioId) return true;
+        if (t.AsignadaA == null && t.CreadaPor?.Id == usuarioId) return true;
+        return false;
     }
 }
