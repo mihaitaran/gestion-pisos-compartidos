@@ -55,34 +55,33 @@ else if (inquilinos.Count == 0)
 }
 else
 {
-    <MudTable Items="@inquilinos" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Nombre</MudTh>
-            <MudTh>Email</MudTh>
-            <MudTh>Habitación</MudTh>
-            <MudTh>Fecha inicio</MudTh>
-            <MudTh>Estado</MudTh>
-            <MudTh>Acciones</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Inquilino?.Nombre @context.Inquilino?.Apellidos</MudTd>
-            <MudTd>@context.Inquilino?.Email</MudTd>
-            <MudTd>@(context.Habitacion?.Numero ?? "Sin asignar")</MudTd>
-            <MudTd>@context.FechaInicio</MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@(context.Activo ? Color.Success : Color.Default)">
-                    @(context.Activo ? "Activo" : "Inactivo")
-                </MudChip>
-            </MudTd>
-            <MudTd>
-                @if (context.Activo)
-                {
-                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Error"
-                               OnClick="() => DesactivarInquilino(context.Id)">Desactivar</MudButton>
-                }
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var i in inquilinos)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@i.Inquilino?.Nombre @i.Inquilino?.Apellidos</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@(i.Activo ? Color.Success : Color.Default)">
+                                @(i.Activo ? "Activo" : "Inactivo")
+                            </MudChip>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@i.Inquilino?.Email</MudText>
+                        <MudText Typo="Typo.body2">Habitación: @(i.Habitacion?.Numero ?? "Sin asignar")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Desde: @i.FechaInicio</MudText>
+                    </MudCardContent>
+                    @if (i.Activo)
+                    {
+                        <MudCardActions>
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Error"
+                                       OnClick="() => DesactivarInquilino(i.Id)">Desactivar</MudButton>
+                        </MudCardActions>
+                    }
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {

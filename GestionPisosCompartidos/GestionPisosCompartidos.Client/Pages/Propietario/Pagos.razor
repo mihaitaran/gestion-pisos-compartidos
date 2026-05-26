@@ -33,24 +33,24 @@ else if (pagos.Count == 0)
 }
 else
 {
-    <MudTable Items="@pagos" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Concepto</MudTh>
-            <MudTh>Inquilino</MudTh>
-            <MudTh>Importe</MudTh>
-            <MudTh>Estado</MudTh>
-            <MudTh>Fecha pago</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Gasto?.Concepto</MudTd>
-            <MudTd>@context.Inquilino?.Nombre @context.Inquilino?.Apellidos</MudTd>
-            <MudTd>@context.Importe.ToString("F2") €</MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(context.Estado)">@context.Estado</MudChip>
-            </MudTd>
-            <MudTd>@(context.FechaPago ?? "-")</MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var p in pagos)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@p.Gasto?.Concepto</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(p.Estado)">@p.Estado</MudChip>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@p.Inquilino?.Nombre @p.Inquilino?.Apellidos</MudText>
+                        <MudText Typo="Typo.body1" Class="mt-2"><b>@p.Importe.ToString("F2") €</b></MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Pagado: @(p.FechaPago ?? "-")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {

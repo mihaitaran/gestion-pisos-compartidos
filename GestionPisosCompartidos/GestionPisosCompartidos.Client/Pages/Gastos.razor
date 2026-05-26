@@ -111,29 +111,30 @@ else if (gastos.Count == 0)
 }
 else
 {
-    <MudTable Items="@gastos" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Concepto</MudTh>
-            <MudTh>Categoría</MudTh>
-            <MudTh>Importe</MudTh>
-            <MudTh>Fecha</MudTh>
-            <MudTh>Vivienda</MudTh>
-            <MudTh>Acciones</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Concepto</MudTd>
-            <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Primary">@context.Categoria</MudChip></MudTd>
-            <MudTd>@context.ImporteTotal.ToString("F2") €</MudTd>
-            <MudTd>@context.FechaGasto</MudTd>
-            <MudTd>@context.Vivienda?.Direccion - @context.Vivienda?.Ciudad</MudTd>
-            <MudTd>
-                @if (rol == "Propietario" || context.CreadoPorId == usuarioId)
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarGasto(context.Id)" />
-                }
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var g in gastos)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@g.Concepto</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@g.Categoria</MudChip>
+                        </div>
+                        <MudText Typo="Typo.body1"><b>@g.ImporteTotal.ToString("F2") €</b></MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@g.Vivienda?.Direccion - @g.Vivienda?.Ciudad</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@g.FechaGasto</MudText>
+                    </MudCardContent>
+                    @if (rol == "Propietario" || g.CreadoPorId == usuarioId)
+                    {
+                        <MudCardActions>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarGasto(g.Id)" />
+                        </MudCardActions>
+                    }
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {

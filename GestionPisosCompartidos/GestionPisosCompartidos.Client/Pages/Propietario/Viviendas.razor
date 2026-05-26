@@ -71,25 +71,33 @@ else if (viviendas.Count == 0)
 }
 else
 {
-    <MudTable Items="@viviendas" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Dirección</MudTh>
-            <MudTh>Ciudad</MudTh>
-            <MudTh>C.P.</MudTh>
-            <MudTh>Acciones</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Direccion @context.Numero, @context.Piso @context.Puerta @(!string.IsNullOrEmpty(context.Escalera) ? $"Esc. {context.Escalera}" : "")</MudTd>
-            <MudTd>@context.Ciudad</MudTd>
-            <MudTd>@context.CodigoPostal</MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarVivienda(context)" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarVivienda(context.Id)" />
-                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Info" OnClick='() => Navigation.NavigateTo($"/viviendas/{context.Id}/inquilinos")'>Inquilinos</MudButton>
-                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary" OnClick='() => Navigation.NavigateTo($"/viviendas/{context.Id}/habitaciones")'>Habitaciones</MudButton>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var v in viviendas)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@v.Direccion @v.Numero</MudText>
+                        @if (!string.IsNullOrEmpty(v.Piso) || !string.IsNullOrEmpty(v.Puerta))
+                        {
+                            <MudText Typo="Typo.body2">@v.Piso @v.Puerta @(!string.IsNullOrEmpty(v.Escalera) ? $"Esc. {v.Escalera}" : "")</MudText>
+                        }
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@v.Ciudad — @v.CodigoPostal</MudText>
+                        @if (!string.IsNullOrEmpty(v.Descripcion))
+                        {
+                            <MudText Typo="Typo.caption">@v.Descripcion</MudText>
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarVivienda(v)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarVivienda(v.Id)" />
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Info" OnClick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/inquilinos")'>Inquilinos</MudButton>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary" OnClick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/habitaciones")'>Habitaciones</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {

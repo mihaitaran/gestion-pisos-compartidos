@@ -64,24 +64,23 @@ else if (incidencias.Count == 0)
 }
 else
 {
-    <MudTable Items="@incidencias" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Título</MudTh>
-            <MudTh>Prioridad</MudTh>
-            <MudTh>Estado</MudTh>
-            <MudTh>Fecha</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Titulo</MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetPrioridadColor(context.Prioridad)">@context.Prioridad</MudChip>
-            </MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoIncidenciaColor(context.Estado ?? "")">@context.Estado</MudChip>
-            </MudTd>
-            <MudTd>@context.FechaCreacion</MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var i in incidencias)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetPrioridadColor(i.Prioridad)">@i.Prioridad</MudChip>
+                            <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoIncidenciaColor(i.Estado ?? "")">@i.Estado</MudChip>
+                        </div>
+                        <MudText Typo="Typo.h6">@i.Titulo</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@i.FechaCreacion</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {
