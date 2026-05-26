@@ -49,11 +49,6 @@ namespace GestionPisosCompartidos.Services.Implementations
                 throw new InvalidOperationException("No se puede eliminar una vivienda con inquilinos activos");
             }
 
-            if (vivienda.Habitaciones != null && vivienda.Habitaciones.Count > 0)
-            {
-                throw new InvalidOperationException("No se puede eliminar una vivienda con habitaciones. Elimina las habitaciones primero");
-            }
-
             return await _repository.DeleteAsync(id);
         }
     }

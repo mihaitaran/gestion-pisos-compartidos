@@ -10,14 +10,11 @@ public partial class Vivienda
     public string? Numero { get; set; }
     public string? Piso { get; set; }
     public string? Puerta { get; set; }
-    public string? Escalera { get; set; }
     public string Ciudad { get; set; } = null!;
     public string CodigoPostal { get; set; } = null!;
     public string? Descripcion { get; set; }
     public int PropietarioId { get; set; }
     public DateTime FechaCreacion { get; set; }
-
-    public virtual ICollection<Habitacion> Habitaciones { get; set; } = new List<Habitacion>();
 
     public virtual ICollection<Mensaje> Mensajes { get; set; } = new List<Mensaje>();
 

@@ -23,7 +23,6 @@ builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 builder.Services.AddScoped<IIncidenciaRepository, IncidenciaRepository>();
 builder.Services.AddScoped<ITareaCalendarioRepository, TareaCalendarioRepository>();
 builder.Services.AddScoped<IInquilinoViviendaRepository, InquilinoViviendaRepository>();
-builder.Services.AddScoped<IHabitacionRepository, HabitacionRepository>();
 builder.Services.AddScoped<IMensajeRepository, MensajeRepository>();
 
 // Services
@@ -35,7 +34,6 @@ builder.Services.AddScoped<IIncidenciaService, IncidenciaService>();
 builder.Services.AddScoped<ITareaCalendarioService, TareaCalendarioService>();
 builder.Services.AddScoped<IInquilinoViviendaService, InquilinoViviendaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IHabitacionService, HabitacionService>();
 builder.Services.AddScoped<IMensajeService, MensajeService>();
 builder.Services.AddScoped<ILugaresService, LugaresService>();
 

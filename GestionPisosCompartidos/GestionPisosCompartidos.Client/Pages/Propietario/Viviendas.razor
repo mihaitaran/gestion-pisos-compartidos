@@ -37,9 +37,6 @@
                 <MudItem xs="6" sm="1">
                     <MudTextField @bind-Value="puerta" Label="Puerta" Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="6" sm="1">
-                    <MudTextField @bind-Value="escalera" Label="Escalera" Variant="Variant.Outlined" />
-                </MudItem>
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="ciudad" Label="Ciudad" Variant="Variant.Outlined" />
                 </MudItem>
@@ -80,7 +77,7 @@ else
                         <MudText Typo="Typo.h6">@v.Direccion @v.Numero</MudText>
                         @if (!string.IsNullOrEmpty(v.Piso) || !string.IsNullOrEmpty(v.Puerta))
                         {
-                            <MudText Typo="Typo.body2">@v.Piso @v.Puerta @(!string.IsNullOrEmpty(v.Escalera) ? $"Esc. {v.Escalera}" : "")</MudText>
+                            <MudText Typo="Typo.body2">@v.Piso @v.Puerta</MudText>
                         }
                         <MudText Typo="Typo.body2" Color="Color.Secondary">@v.Ciudad — @v.CodigoPostal</MudText>
                         @if (!string.IsNullOrEmpty(v.Descripcion))
@@ -92,7 +89,6 @@ else
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Warning" OnClick="() => EditarVivienda(v)" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => EliminarVivienda(v.Id)" />
                         <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Info" OnClick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/inquilinos")'>Inquilinos</MudButton>
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Secondary" OnClick='() => Navigation.NavigateTo($"/viviendas/{v.Id}/habitaciones")'>Habitaciones</MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -111,7 +107,6 @@ else
     private string numero = "";
     private string piso = "";
     private string puerta = "";
-    private string escalera = "";
     private string ciudad = "";
     private string codigoPostal = "";
     private string descripcion = "";
@@ -182,7 +177,6 @@ else
                     Numero = numero,
                     Piso = piso,
                     Puerta = puerta,
-                    Escalera = escalera,
                     Ciudad = ciudad,
                     CodigoPostal = codigoPostal,
                     Descripcion = descripcion
@@ -209,7 +203,6 @@ else
                     Numero = numero,
                     Piso = piso,
                     Puerta = puerta,
-                    Escalera = escalera,
                     Ciudad = ciudad,
                     CodigoPostal = codigoPostal,
                     Descripcion = descripcion,
@@ -245,7 +238,6 @@ else
         numero = v.Numero ?? "";
         piso = v.Piso ?? "";
         puerta = v.Puerta ?? "";
-        escalera = v.Escalera ?? "";
         ciudad = v.Ciudad;
         codigoPostal = v.CodigoPostal;
         descripcion = v.Descripcion ?? "";
@@ -286,7 +278,6 @@ else
         numero = "";
         piso = "";
         puerta = "";
-        escalera = "";
         ciudad = "";
         codigoPostal = "";
         descripcion = "";
