@@ -4,6 +4,17 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Incidencias</MudText>
 
+@if (viviendas.Count > 0)
+{
+    <MudSelect T="int" Value="viviendaFiltro" Label="Filtrar por vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="FiltrarIncidencias">
+        <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
+        @foreach (var v in viviendas)
+        {
+            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+        }
+    </MudSelect>
+}
+
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
@@ -24,7 +35,7 @@ else if (incidencias.Count == 0)
 else
 {
     <MudGrid>
-        @foreach (var i in incidencias)
+        @foreach (var i in incidenciasFiltradas)
         {
             <MudItem xs="12" sm="6" md="4">
                 <MudCard Elevation="2">
@@ -61,6 +72,8 @@ else
     private bool cargando = true;
     private string mensaje = "";
     private List<ViviendaDTO> viviendas = new();
+    private int viviendaFiltro = 0;
+    private List<IncidenciaDTO> incidenciasFiltradas = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -86,6 +99,7 @@ else
                     var inc = await Http.GetFromJsonAsync<List<IncidenciaDTO>>($"api/incidencias/vivienda/{v.Id}") ?? new();
                     incidencias.AddRange(inc);
                 }
+                incidenciasFiltradas = incidencias;
             }
         }
         catch
@@ -93,6 +107,14 @@ else
             mensaje = "Error al cargar incidencias";
         }
         cargando = false;
+    }
+
+    private void FiltrarIncidencias(int viviendaId)
+    {
+        viviendaFiltro = viviendaId;
+        incidenciasFiltradas = viviendaId == 0
+            ? incidencias
+            : incidencias.Where(i => i.ViviendaId == viviendaId).ToList();
     }
 
     private async Task CambiarEstado(int id, string nuevoEstado)

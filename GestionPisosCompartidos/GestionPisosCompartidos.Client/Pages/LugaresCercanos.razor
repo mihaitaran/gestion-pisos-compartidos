@@ -7,9 +7,7 @@
 
 @if (rol == "Propietario" && viviendas.Count > 0)
 {
-    <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined"
-               Class="mb-4" Style="max-width: 400px;"
-               ValueChanged="CambiarVivienda">
+    <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="CambiarVivienda">
         <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
         @foreach (var v in viviendas)
         {
@@ -43,8 +41,7 @@
         <MudNumericField @bind-Value="radio" Label="Radio (metros)" Variant="Variant.Outlined" Min="500" Max="5000" />
     </MudItem>
     <MudItem xs="12" sm="4" Class="d-flex align-center">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search"
-                   OnClick="BuscarLugares" Disabled="@(buscando || latitud == 0)">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="BuscarLugares" Disabled="@(buscando || latitud == 0)">
             @(buscando ? "Buscando..." : "Buscar")
         </MudButton>
     </MudItem>

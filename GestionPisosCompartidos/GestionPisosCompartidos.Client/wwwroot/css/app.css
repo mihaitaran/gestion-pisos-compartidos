@@ -188,7 +188,7 @@ html, body {
 
 /* ===== CHAT ===== */
 .chat-container {
-    max-height: 500px;
+    height: 450px;
     overflow-y: auto;
     scroll-behavior: smooth;
 }
@@ -287,3 +287,59 @@ html, body {
     -webkit-text-fill-color: transparent;
 }
 
+/* ===== APPBAR ===== */
+.appbar-gradient {
+    background: linear-gradient(90deg, #1565C0, #0D47A1) !important;
+}
+
+.appbar-title {
+    font-weight: 600;
+    color: white;
+}
+
+.appbar-chip {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.appbar-username {
+    color: white;
+    margin: 0 8px;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard-welcome-title {
+    color: white;
+    font-weight: 600;
+}
+
+.dashboard-welcome-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ===== CALENDARIO ===== */
+.calendario-cabecera-dia {
+    background-color: #1565C0;
+    color: white;
+    padding: 8px;
+    text-align: center;
+}
+
+.calendario-chip-tarea {
+    font-size: 0.7rem !important;
+    margin: 2px 0 !important;
+    width: 100% !important;
+}
+
+/* ===== CHAT ===== */
+.chat-mensaje {
+    max-width: 70%;
+}
+
+/* ===== NAVMENU ===== */
+.nav-seccion {
+    color: var(--color-text-secondary);
+    padding: 0 16px;
+    margin-top: 16px;
+    margin-bottom: 4px;
+}

@@ -7,7 +7,7 @@
 
     @if (rol == "Propietario")
     {
-        <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1" Style="color: var(--color-text-secondary);">GESTIÓN</MudText>
+        <MudText Typo="Typo.overline" Class="nav-seccion">GESTIÓN</MudText>
         <MudNavLink Href="/viviendas" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Viviendas</MudNavLink>
         <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt" IconColor="Color.Info">Gastos</MudNavLink>
         <MudNavLink Href="/pagos" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success">Pagos</MudNavLink>
@@ -15,7 +15,7 @@
     }
     else if (rol == "Inquilino")
     {
-        <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1" Style="color: var(--color-text-secondary);">MI VIVIENDA</MudText>
+        <MudText Typo="Typo.overline" Class="nav-seccion">MI VIVIENDA</MudText>
         <MudNavLink Href="/gastos" Icon="@Icons.Material.Filled.Receipt" IconColor="Color.Info">Gastos</MudNavLink>
         <MudNavLink Href="/mis-pagos" Icon="@Icons.Material.Filled.Payment" IconColor="Color.Success">Mis pagos</MudNavLink>
         <MudNavLink Href="/mis-incidencias" Icon="@Icons.Material.Filled.Warning" IconColor="Color.Warning">Incidencias</MudNavLink>

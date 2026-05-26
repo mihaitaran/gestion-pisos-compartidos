@@ -4,9 +4,7 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Estado de pagos</MudText>
 
-<MudSelect T="int" Value="viviendaSeleccionada" Label="Filtrar por vivienda" Variant="Variant.Outlined"
-           Class="mb-4" Style="max-width: 400px;"
-           ValueChanged="CambiarVivienda">
+<MudSelect T="int" Value="viviendaSeleccionada" Label="Filtrar por vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="CambiarVivienda">
     <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
     @foreach (var v in viviendas)
     {

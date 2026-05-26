@@ -56,8 +56,7 @@ else
             <MudTd>
                 @if (context.Estado == "Pendiente")
                 {
-                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
-                               StartIcon="@Icons.Material.Filled.Check" OnClick="() => MarcarPagado(context.Id)">Pagado</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="() => MarcarPagado(context.Id)">Pagado</MudButton>
                 }
             </MudTd>
         </RowTemplate>

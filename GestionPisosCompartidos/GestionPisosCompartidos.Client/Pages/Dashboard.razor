@@ -6,8 +6,8 @@
 @if (usuario != null)
 {
     <MudPaper Class="dashboard-welcome" Elevation="0">
-        <MudText Typo="Typo.h4" Style="color: white; font-weight: 600;">Bienvenido, @usuario.Nombre</MudText>
-        <MudText Typo="Typo.body1" Style="color: rgba(255,255,255,0.8);">
+        <MudText Typo="Typo.h4" Class="dashboard-welcome-title">Bienvenido, @usuario.Nombre</MudText>
+        <MudText Typo="Typo.body1" Class="dashboard-welcome-subtitle">
             @(usuario.Rol == "Propietario" ? "Gestiona tus viviendas e inquilinos" : "Consulta tus pagos y tareas")
         </MudText>
     </MudPaper>

@@ -9,8 +9,7 @@
     @if (rol == "Propietario")
     {
         <MudItem xs="12" sm="6">
-            <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined"
-                       ValueChanged="CambiarVivienda">
+            <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined" ValueChanged="CambiarVivienda">
                 <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
                 @foreach (var v in viviendas)
                 {
@@ -28,9 +27,7 @@
         </MudItem>
     }
     <MudItem xs="12" sm="6" Class="d-flex align-center">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="() => { mostrarForm = !mostrarForm; tareaEditando = null; LimpiarFormulario(); }"
-                   Disabled="@(viviendaSeleccionada == 0)">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => { mostrarForm = !mostrarForm; tareaEditando = null; LimpiarFormulario(); }" Disabled="@(viviendaSeleccionada == 0)">
             @(mostrarForm ? "Cancelar" : "Nueva tarea")
         </MudButton>
     </MudItem>
@@ -55,8 +52,7 @@
                 @if (rol == "Propietario")
                 {
                     <MudItem xs="12" sm="4">
-                        <MudSelect T="int" @bind-Value="asignadaAId" Label="Asignar a" Variant="Variant.Outlined">
-                            <MudSelectItem Value="0">Sin asignar</MudSelectItem>
+                        <MudSelect T="int" @bind-Value="asignadaAId" Label="Asignar a" Variant="Variant.Outlined"> <MudSelectItem Value="0">Sin asignar</MudSelectItem>
                             @foreach (var iv in inquilinosVivienda)
                             {
                                 <MudSelectItem Value="@iv.InquilinoId">@iv.Inquilino?.Nombre @iv.Inquilino?.Apellidos</MudSelectItem>
@@ -111,7 +107,7 @@ else
         @foreach (var dia in diasSemana)
         {
             <MudItem xs="0" Style="width: 14.28%; flex-basis: 14.28%; max-width: 14.28%;">
-                <MudPaper Class="pa-2 text-center" Elevation="0" Style="background-color: #1565C0; color: white;">
+                <MudPaper Class="calendario-cabecera-dia" Elevation="0">
                     <MudText Typo="Typo.subtitle2"><b>@dia</b></MudText>
                 </MudPaper>
             </MudItem>
@@ -136,7 +132,7 @@ else
                     {
                         <MudChip T="string" Size="Size.Small"
                                  Color="@(t.Completada ? Color.Success : Color.Primary)"
-                                 Style="font-size: 0.7rem; margin: 2px 0; width: 100%;"
+                                 Class="calendario-chip-tarea"
                                  OnClick="() => MostrarDetalleTarea(t)">
                             @(t.Titulo.Length > 12 ? t.Titulo.Substring(0, 12) + "..." : t.Titulo)
                         </MudChip>

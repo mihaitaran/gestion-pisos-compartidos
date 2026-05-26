@@ -5,11 +5,20 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">Gastos</MudText>
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-           OnClick="() => mostrarForm = !mostrarForm" Class="mb-4"
-           Disabled="@(viviendas.Count == 0)">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => mostrarForm = !mostrarForm" Class="mb-4" Disabled="@(viviendas.Count == 0)">
     @(mostrarForm ? "Cancelar" : "Registrar gasto")
 </MudButton>
+
+@if (rol == "Propietario" && viviendas.Count > 0)
+{
+    <MudSelect T="int" Value="viviendaFiltro" Label="Filtrar por vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="FiltrarGastos">
+        <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
+        @foreach (var v in viviendas)
+        {
+            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+        }
+    </MudSelect>
+}
 
 @if (mostrarForm)
 {
@@ -28,8 +37,7 @@
                 @if (rol == "Propietario")
                 {
                     <MudItem xs="12" sm="6">
-                        <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined"
-                                   ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarInquilinosVivienda(); })">
+                        <MudSelect T="int" Value="viviendaSeleccionada" Label="Vivienda" Variant="Variant.Outlined" ValueChanged="@((int val) => { viviendaSeleccionada = val; CargarInquilinosVivienda(); })">
                             <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
                             @foreach (var v in viviendas)
                             {
@@ -77,9 +85,7 @@
                         <MudText Typo="Typo.subtitle2" Class="mb-2">Selecciona inquilinos</MudText>
                         @foreach (var iv in inquilinosVivienda)
                         {
-                            <MudCheckBox T="bool" Value="@inquilinosSeleccionados.Contains(iv.InquilinoId)"
-                                         ValueChanged="@((bool val) => ToggleInquilino(iv.InquilinoId, val))"
-                                         Label="@($"{iv.Inquilino?.Nombre} {iv.Inquilino?.Apellidos}")" Color="Color.Primary" />
+                            <MudCheckBox T="bool" Value="@inquilinosSeleccionados.Contains(iv.InquilinoId)" ValueChanged="@((bool val) => ToggleInquilino(iv.InquilinoId, val))" Label="@($"{iv.Inquilino?.Nombre} {iv.Inquilino?.Apellidos}")" Color="Color.Primary" />
                         }
                     </MudPaper>
                 }
@@ -112,7 +118,7 @@ else if (gastos.Count == 0)
 else
 {
     <MudGrid>
-        @foreach (var g in gastos)
+        @foreach (var g in gastosFiltrados)
         {
             <MudItem xs="12" sm="6" md="4">
                 <MudCard Elevation="2">
@@ -154,6 +160,8 @@ else
     private string categoria = "";
     private decimal importeTotal = 0;
     private DateTime? fechaGasto = DateTime.Today;
+    private int viviendaFiltro = 0;
+    private List<GastoDTO> gastosFiltrados = new();
 
     private int usuarioId = 0;
 
@@ -187,6 +195,7 @@ else
                         var gastosVivienda = await Http.GetFromJsonAsync<List<GastoDTO>>($"api/gastos/vivienda/{v.Id}") ?? new();
                         gastos.AddRange(gastosVivienda);
                     }
+                    gastosFiltrados = gastos;
                 }
                 else
                 {
@@ -211,6 +220,7 @@ else
                             g.Pagos.Any(p => p.InquilinoId == usuarioId)
                         ).ToList();
                     }
+                    gastosFiltrados = gastos;
                 }
             }
         }
@@ -219,6 +229,14 @@ else
             mensaje = "Error al cargar datos";
         }
         cargando = false;
+    }
+
+    private void FiltrarGastos(int viviendaId)
+    {
+        viviendaFiltro = viviendaId;
+        gastosFiltrados = viviendaId == 0
+            ? gastos
+            : gastos.Where(g => g.ViviendaId == viviendaId).ToList();
     }
 
     private async Task CargarInquilinosVivienda()
