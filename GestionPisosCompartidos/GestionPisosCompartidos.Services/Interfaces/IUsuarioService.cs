@@ -9,5 +9,6 @@ namespace GestionPisosCompartidos.Services.Interfaces
         Task<Usuario> CreateAsync(Usuario usuario);
         Task<Usuario?> UpdateAsync(Usuario usuario);
         Task<bool> DeleteAsync(int id);
+        Task<bool> CambiarPasswordAsync(int id, string passwordActual, string passwordNueva);
     }
 }

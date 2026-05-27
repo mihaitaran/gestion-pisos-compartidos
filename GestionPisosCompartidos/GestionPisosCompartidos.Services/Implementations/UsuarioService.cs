@@ -39,5 +39,17 @@ namespace GestionPisosCompartidos.Services.Implementations
         {
             return await _repository.DeleteAsync(id);
         }
+        public async Task<bool> CambiarPasswordAsync(int id, string passwordActual, string passwordNueva)
+        {
+            var usuario = await _repository.GetByIdAsync(id);
+            if (usuario == null) return false;
+
+            if (!BCrypt.Net.BCrypt.Verify(passwordActual, usuario.PasswordHash))
+                return false;
+
+            usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordNueva);
+            await _repository.UpdateAsync(usuario);
+            return true;
+        }
     }
 }
