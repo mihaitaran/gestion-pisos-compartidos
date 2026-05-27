@@ -7,7 +7,7 @@
     <div class="login-wrapper">
         <div class="login-image"></div>
         <div class="login-form">
-            <MudText Typo="Typo.h4" Class="text-gradient mb-2" Align="Align.Center">Gestión Pisos</MudText>
+            <MudText Typo="Typo.h4" Class="text-gradient mb-2" Align="Align.Center">RoomMate</MudText>
             <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Align="Align.Center" Class="mb-6">Inicia sesión en tu cuenta</MudText>
 
             @if (!string.IsNullOrEmpty(mensajeError))
@@ -59,7 +59,7 @@
 
             if (success)
             {
-                Navigation.NavigateTo("/dashboard", forceLoad: true);
+                Navigation.NavigateTo("/", forceLoad: true);
             }
             else
             {
