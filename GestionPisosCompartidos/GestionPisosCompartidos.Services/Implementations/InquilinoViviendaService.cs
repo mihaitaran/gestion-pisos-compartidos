@@ -30,7 +30,6 @@ namespace GestionPisosCompartidos.Services.Implementations
 
         public async Task<InquilinosVivienda> CreateAsync(InquilinosVivienda inquilinoVivienda)
         {
-            // Comprobar si el inquilino ya tiene una vivienda activa
             var asignaciones = await _repository.GetByInquilinoIdAsync(inquilinoVivienda.InquilinoId);
             var tieneActiva = asignaciones.Any(a => a.Activo == true);
 

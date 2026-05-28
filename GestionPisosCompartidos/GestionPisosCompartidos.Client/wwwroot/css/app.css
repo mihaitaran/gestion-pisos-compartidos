@@ -60,15 +60,15 @@ html, body {
     position: relative;
 }
 
-    .login-image::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(21, 101, 192, 0.0), rgba(0, 137, 123, 0.0));
-    }
+.login-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(21, 101, 192, 0.0), rgba(0, 137, 123, 0.0));
+}
 
 .login-form {
     flex: 1;
@@ -85,13 +85,13 @@ html, body {
     border-radius: var(--border-radius);
 }
 
-    .login-card .mud-input-control {
-        width: 100%;
-    }
+.login-card .mud-input-control {
+    width: 100%;
+}
 
-    .login-card .mud-button-root {
-        width: 100%;
-    }
+.login-card .mud-button-root {
+    width: 100%;
+}
 
 @media (max-width: 768px) {
     .login-image {
@@ -126,10 +126,10 @@ html, body {
     position: relative;
 }
 
-    .menu-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-lg);
-    }
+.menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
 
 .menu-card-bg {
     position: relative;
@@ -177,9 +177,9 @@ html, body {
     transition: background-color 0.2s;
 }
 
-    .calendario-celda:hover {
-        background-color: #f5f5f5;
-    }
+.calendario-celda:hover {
+    background-color: #f5f5f5;
+}
 
 .calendario-hoy {
     color: var(--color-primary);
@@ -200,10 +200,10 @@ html, body {
     border-radius: var(--border-radius);
 }
 
-    .lugar-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-    }
+.lugar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
 
 /* ===== SIDEBAR / DRAWER ===== */
 .sidebar-header {
@@ -229,19 +229,19 @@ html, body {
     margin: 0 auto;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
 
-        .loading-progress circle:last-child {
-            stroke: var(--color-primary);
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.loading-progress circle:last-child {
+    stroke: var(--color-primary);
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
 
 .loading-progress-text {
     position: absolute;
@@ -250,9 +250,9 @@ html, body {
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Cargando...");
-    }
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Cargando...");
+}
 
 /* ===== ERROR ===== */
 #blazor-error-ui {
@@ -269,12 +269,12 @@ html, body {
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
 
 /* ===== UTILIDADES ===== */
 .w-100 {

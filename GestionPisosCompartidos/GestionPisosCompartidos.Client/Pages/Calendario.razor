@@ -95,14 +95,12 @@ else if (viviendaSeleccionada == 0 && rol == "Inquilino")
 }
 else
 {
-    <!-- Navegación del mes -->
     <MudPaper Class="d-flex align-center justify-center pa-3 mb-4" Elevation="2">
         <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="MesAnterior" />
         <MudText Typo="Typo.h5" Class="mx-4">@mesActual.ToString("MMMM yyyy").ToUpper()</MudText>
         <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="MesSiguiente" />
     </MudPaper>
 
-    <!-- Cabecera días -->
     <MudGrid Spacing="0" Class="mb-1">
         @foreach (var dia in diasSemana)
         {
@@ -114,7 +112,6 @@ else
         }
     </MudGrid>
 
-    <!-- Días del mes -->
     <MudGrid Spacing="0">
         @foreach (var dia in diasDelMes)
         {
@@ -142,7 +139,6 @@ else
         }
     </MudGrid>
 
-    <!-- Tareas pendientes -->
     @if (tareas.Any(t => !t.Completada))
     {
         <MudText Typo="Typo.h6" Class="mt-6 mb-2">Tareas pendientes</MudText>
@@ -201,7 +197,6 @@ else
     }
 }
 
-<!-- Diálogo detalle -->
 <MudDialog @bind-Visible="mostrarDetalle">
     <TitleContent>
         <MudText Typo="Typo.h6">@tareaDetalle?.Titulo</MudText>

@@ -28,7 +28,6 @@ namespace GestionPisosCompartidos.Services.Implementations
 
             if (usuario == null) return null;
 
-            // Verificar contraseña
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, usuario.PasswordHash))
                 return null;
 
@@ -37,7 +36,6 @@ namespace GestionPisosCompartidos.Services.Implementations
 
         public async Task<AuthResponseDTO?> RegisterAsync(RegisterDTO registerDto)
         {
-            // Comprobar si el email ya existe
             var usuarios = await _usuarioRepository.GetAllAsync();
             if (usuarios.Any(u => u.Email == registerDto.Email))
                 return null;

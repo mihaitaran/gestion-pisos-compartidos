@@ -74,7 +74,6 @@ namespace GestionPisosCompartidos.Repositories.Implementations
 
             if (vivienda == null) return false;
 
-            // Borrar pagos de cada gasto
             foreach (var gasto in vivienda.Gastos)
             {
                 _context.Pagos.RemoveRange(gasto.Pagos);
