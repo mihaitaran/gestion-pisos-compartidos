@@ -17,7 +17,7 @@
 
             <MudTextField @bind-Value="email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Class="mb-3" />
 
-            <MudTextField @bind-Value="password" Label="Contraseña" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-4" OnKeyDown="@(async (e) => { if (e.Key == "Enter") await Acceso(); })" />
+            <MudTextField @bind-Value="password" Label="Contraseña" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-4" OnKeyUp="@(async (e) => { if (e.Key == "Enter") await Acceso(); })" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mb-4"
                        OnClick="Acceso" Disabled="@cargando"
