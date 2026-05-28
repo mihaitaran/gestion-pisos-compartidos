@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="RoomMate.webp" />
+    <link rel="icon" type="image/png" href="RoomMate.png" />
     <link href="GestionPisosCompartidos.Client.styles.css" rel="stylesheet" />
 </head>
 
@@ -30,6 +30,14 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script>
+        window.scrollToBottom = function (elementId) {
+            var element = document.getElementById(elementId);
+            if (element) {
+                element.scrollTop = element.scrollHeight;
+            }
+        }
+    </script>
 </body>
 
 </html>

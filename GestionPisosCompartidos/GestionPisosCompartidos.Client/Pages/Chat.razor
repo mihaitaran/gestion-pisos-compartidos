@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <MudText Typo="Typo.h4" Class="mb-4">Chat de la vivienda</MudText>
@@ -30,7 +31,7 @@ else if (viviendaActiva != null)
 
 @if (viviendaSeleccionada > 0)
 {
-    <MudPaper Class="chat-container pa-4 mb-4" Elevation="2">
+    <MudPaper id="chat-container" Class="chat-container pa-4 mb-4" Elevation="2">
         @if (mensajes.Count == 0)
         {
             <MudText Align="Align.Center" Color="Color.Secondary">No hay mensajes aún. ¡Empieza la conversación!</MudText>
@@ -55,7 +56,7 @@ else if (viviendaActiva != null)
     <MudGrid>
         <MudItem xs="10">
             <MudTextField @bind-Value="nuevoMensaje" Label="Escribe un mensaje..." Variant="Variant.Outlined"
-                          OnKeyDown="EnviarConEnter" />
+                          OnKeyUp="EnviarConEnter" />
         </MudItem>
         <MudItem xs="2" Class="d-flex align-center">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="EnviarMensaje">Enviar</MudButton>
@@ -101,15 +102,15 @@ else if (rol == "Inquilino" && viviendaActiva == null)
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<MensajeDTO>("RecibirMensaje", (mensaje) =>
+        hubConnection.On<MensajeDTO>("RecibirMensaje", async (mensaje) =>
         {
             if (!mensajes.Any(m => m.Id == mensaje.Id))
             {
                 mensajes.Add(mensaje);
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
+                await ScrollAlFinal();
             }
         });
-
         try
         {
             await hubConnection.StartAsync();
@@ -185,6 +186,7 @@ else if (rol == "Inquilino" && viviendaActiva == null)
         try
         {
             mensajes = await Http.GetFromJsonAsync<List<MensajeDTO>>($"api/mensajes/vivienda/{viviendaSeleccionada}") ?? new();
+            await ScrollAlFinal();
         }
         catch
         {
@@ -228,5 +230,10 @@ else if (rol == "Inquilino" && viviendaActiva == null)
         {
             await hubConnection.DisposeAsync();
         }
+    }
+
+    private async Task ScrollAlFinal()
+    {
+        await JS.InvokeVoidAsync("scrollToBottom", "chat-container");
     }
 }

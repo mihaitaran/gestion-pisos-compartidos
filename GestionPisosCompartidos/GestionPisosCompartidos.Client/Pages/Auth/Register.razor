@@ -34,7 +34,7 @@
                     <MudTextField @bind-Value="password" Label="Contraseña" Variant="Variant.Outlined" InputType="InputType.Password" />
                 </MudItem>
                 <MudItem xs="6">
-                    <MudTextField @bind-Value="confirmPassword" Label="Confirmar" Variant="Variant.Outlined" InputType="InputType.Password" />
+                    <MudTextField @bind-Value="confirmPassword" Label="Confirmar" Variant="Variant.Outlined" InputType="InputType.Password" OnKeyDown="@(async (e) => { if (e.Key == "Enter") await Registro(); })" />
                 </MudItem>
                 <MudItem xs="6">
                     <MudTextField @bind-Value="telefono" Label="Teléfono" Variant="Variant.Outlined" />
