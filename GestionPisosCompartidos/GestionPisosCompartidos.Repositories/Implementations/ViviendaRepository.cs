@@ -49,7 +49,7 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             var existente = await _context.Viviendas.FindAsync(vivienda.Id);
             if (existente == null) return null;
 
-            existente.Direccion = vivienda.Direccion;
+            existente.Calle = vivienda.Calle;
             existente.Numero = vivienda.Numero;
             existente.Piso = vivienda.Piso;
             existente.Puerta = vivienda.Puerta;

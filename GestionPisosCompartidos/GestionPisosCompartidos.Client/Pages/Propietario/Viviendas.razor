@@ -18,14 +18,20 @@
             <MudGrid>
                 <MudItem xs="12" sm="6">
                     <MudAutocomplete T="SugerenciaDireccionDTO"
-                                     Label="Dirección (calle)"
+                                     Value="sugerenciaSeleccionada"
+                                     Label="Calle"
                                      Variant="Variant.Outlined"
                                      SearchFunc="BuscarDirecciones"
-                                     ToStringFunc="@(s => s == null ? "" : $"{s.Calle}, {s.Ciudad} {s.CodigoPostal}")"
+                                     ToStringFunc="@(s => s == null ? "" : s.Calle)"
                                      ValueChanged="SeleccionarDireccion"
                                      DebounceInterval="500"
                                      MinCharacters="3"
-                                     ResetValueOnEmptyText="true" />
+                                     ResetValueOnEmptyText="true">
+                        <ItemTemplate Context="s">
+                            <MudText Typo="Typo.body2">@s.Calle</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@s.Ciudad @s.CodigoPostal</MudText>
+                        </ItemTemplate>
+                    </MudAutocomplete>
                 </MudItem>
                 <MudItem xs="6" sm="2">
                     <MudTextField @bind-Value="numero" Label="Número" Variant="Variant.Outlined" />
@@ -73,7 +79,7 @@ else
             <MudItem xs="12" sm="6" md="4">
                 <MudCard Elevation="2">
                     <MudCardContent>
-                        <MudText Typo="Typo.h6">@v.Direccion @v.Numero</MudText>
+                        <MudText Typo="Typo.h6">@v.Calle @v.Numero</MudText>
                         @if (!string.IsNullOrEmpty(v.Piso) || !string.IsNullOrEmpty(v.Puerta))
                         {
                             <MudText Typo="Typo.body2">@v.Piso @v.Puerta</MudText>
@@ -101,8 +107,9 @@ else
     private bool mostrarForm = false;
     private string mensaje = "";
     private ViviendaDTO? viviendaEditando = null;
+    private SugerenciaDireccionDTO? sugerenciaSeleccionada = null;
 
-    private string direccion = "";
+    private string calle = "";
     private string numero = "";
     private string piso = "";
     private string puerta = "";
@@ -145,9 +152,9 @@ else
 
     private async Task GuardarVivienda()
     {
-        if (string.IsNullOrEmpty(direccion))
+        if (string.IsNullOrEmpty(calle))
         {
-            mensaje = "Introduce una dirección";
+            mensaje = "Introduce una calle";
             return;
         }
 
@@ -172,7 +179,7 @@ else
             {
                 var data = new
                 {
-                    Direccion = direccion,
+                    Calle = calle,
                     Numero = numero,
                     Piso = piso,
                     Puerta = puerta,
@@ -198,7 +205,7 @@ else
             {
                 var data = new
                 {
-                    Direccion = direccion,
+                    Calle = calle,
                     Numero = numero,
                     Piso = piso,
                     Puerta = puerta,
@@ -233,7 +240,7 @@ else
     private void EditarVivienda(ViviendaDTO v)
     {
         viviendaEditando = v;
-        direccion = v.Direccion;
+        calle = v.Calle;
         numero = v.Numero ?? "";
         piso = v.Piso ?? "";
         puerta = v.Puerta ?? "";
@@ -241,6 +248,13 @@ else
         codigoPostal = v.CodigoPostal;
         descripcion = v.Descripcion ?? "";
         mostrarForm = true;
+
+        sugerenciaSeleccionada = new SugerenciaDireccionDTO
+        {
+            Calle = v.Calle,
+            Ciudad = v.Ciudad,
+            CodigoPostal = v.CodigoPostal
+        };
     }
 
     private async Task EliminarVivienda(int id)
@@ -273,13 +287,14 @@ else
     private void LimpiarFormulario()
     {
         viviendaEditando = null;
-        direccion = "";
+        calle = "";
         numero = "";
         piso = "";
         puerta = "";
         ciudad = "";
         codigoPostal = "";
         descripcion = "";
+        sugerenciaSeleccionada = null;
     }
 
     private async Task<IEnumerable<SugerenciaDireccionDTO>> BuscarDirecciones(string valor, CancellationToken token)
@@ -300,7 +315,7 @@ else
     private void SeleccionarDireccion(SugerenciaDireccionDTO s)
     {
         if (s == null) return;
-        direccion = s.Calle;
+        calle = s.Calle;
         if (!string.IsNullOrEmpty(s.Numero)) numero = s.Numero;
         if (!string.IsNullOrEmpty(s.Ciudad)) ciudad = s.Ciudad;
         if (!string.IsNullOrEmpty(s.CodigoPostal)) codigoPostal = s.CodigoPostal;

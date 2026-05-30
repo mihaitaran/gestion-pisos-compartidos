@@ -36,7 +36,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(500);
             entity.Property(e => e.Telefono).HasMaxLength(20);
             entity.Property(e => e.Rol).HasMaxLength(20);
-            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.FechaRegistro).HasDefaultValueSql("(getdate())");
 
             // CHECK de Rol
@@ -49,7 +48,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasIndex(e => e.PropietarioId);
 
-            entity.Property(e => e.Direccion).HasMaxLength(300);
+            entity.Property(e => e.Calle).HasMaxLength(300);
             entity.Property(e => e.Numero).HasMaxLength(10);
             entity.Property(e => e.Piso).HasMaxLength(10);
             entity.Property(e => e.Puerta).HasMaxLength(10);
@@ -69,8 +68,6 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.InquilinoId);
             entity.HasIndex(e => e.ViviendaId);
             entity.HasIndex(e => new { e.InquilinoId, e.ViviendaId, e.FechaInicio });
-
-            entity.Property(e => e.Activo).HasDefaultValue(true);
 
             entity.HasOne(d => d.Inquilino).WithMany(p => p.InquilinosVivienda)
                 .HasForeignKey(d => d.InquilinoId)

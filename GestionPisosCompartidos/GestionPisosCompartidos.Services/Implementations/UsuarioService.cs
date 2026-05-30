@@ -26,7 +26,6 @@ namespace GestionPisosCompartidos.Services.Implementations
         public async Task<Usuario> CreateAsync(Usuario usuario)
         {
             usuario.FechaRegistro = DateTime.UtcNow;
-            usuario.Activo = true;
             return await _repository.CreateAsync(usuario);
         }
 

@@ -1,4 +1,5 @@
-﻿using GestionPisosCompartidos.Services.Interfaces;
+﻿using GestionPisosCompartidos.Models.DTOs;
+using GestionPisosCompartidos.Services.Interfaces;
 using System.Text.Json;
 
 namespace GestionPisosCompartidos.Services.Integrations

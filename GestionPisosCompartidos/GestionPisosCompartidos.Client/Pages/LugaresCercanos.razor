@@ -11,7 +11,7 @@
         <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
         @foreach (var v in viviendas)
         {
-            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+            <MudSelectItem Value="@v.Id">@v.Calle - @v.Ciudad</MudSelectItem>
         }
     </MudSelect>
 }
@@ -159,8 +159,8 @@ else if (lugares.Count > 0)
 
     private async Task GeocodificarVivienda(ViviendaDTO vivienda)
     {
-        var direccionCompleta = $"{vivienda.Direccion} {vivienda.Numero}, {vivienda.CodigoPostal} {vivienda.Ciudad}, España";
-        viviendaDireccion = $"{vivienda.Direccion} {vivienda.Numero}, {vivienda.Ciudad}";
+        var direccionCompleta = $"{vivienda.Calle} {vivienda.Numero}, {vivienda.CodigoPostal} {vivienda.Ciudad}, España";
+        viviendaDireccion = $"{vivienda.Calle} {vivienda.Numero}, {vivienda.Ciudad}";
 
         try
         {

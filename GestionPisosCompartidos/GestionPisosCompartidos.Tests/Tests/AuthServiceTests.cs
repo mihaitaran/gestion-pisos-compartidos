@@ -49,8 +49,7 @@ namespace GestionPisosCompartidos.Tests
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password1!"),
                 Nombre = "Test",
                 Apellidos = "Usuario",
-                Rol = "Inquilino",
-                Activo = true
+                Rol = "Inquilino"
             };
 
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Usuario> { usuario });
@@ -72,8 +71,7 @@ namespace GestionPisosCompartidos.Tests
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password1!"),
                 Nombre = "Test",
                 Apellidos = "Usuario",
-                Rol = "Propietario",
-                Activo = true
+                Rol = "Propietario"
             };
 
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Usuario> { usuario });
@@ -97,8 +95,7 @@ namespace GestionPisosCompartidos.Tests
                 PasswordHash = "hash",
                 Nombre = "Test",
                 Apellidos = "Usuario",
-                Rol = "Inquilino",
-                Activo = true
+                Rol = "Inquilino"
             };
 
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Usuario> { usuario });

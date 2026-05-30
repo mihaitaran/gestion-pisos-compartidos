@@ -15,7 +15,7 @@
         <MudSelectItem Value="0">Todas las viviendas</MudSelectItem>
         @foreach (var v in viviendas)
         {
-            <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+            <MudSelectItem Value="@v.Id">@v.Calle - @v.Ciudad</MudSelectItem>
         }
     </MudSelect>
 }
@@ -29,7 +29,7 @@
             @if (rol == "Inquilino" && viviendaActiva != null)
             {
                 <MudAlert Severity="Severity.Info" Class="mb-3">
-                    Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+                    Vivienda: @viviendaActiva.Calle - @viviendaActiva.Ciudad
                 </MudAlert>
             }
 
@@ -41,7 +41,7 @@
                             <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
                             @foreach (var v in viviendas)
                             {
-                                <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+                                <MudSelectItem Value="@v.Id">@v.Calle - @v.Ciudad</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
@@ -128,7 +128,7 @@ else
                             <MudChip T="string" Size="Size.Small" Color="Color.Primary">@g.Categoria</MudChip>
                         </div>
                         <MudText Typo="Typo.body1"><b>@g.ImporteTotal.ToString("F2") €</b></MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@g.Vivienda?.Direccion - @g.Vivienda?.Ciudad</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@g.Vivienda?.Calle - @g.Vivienda?.Ciudad</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">@g.FechaGasto</MudText>
                     </MudCardContent>
                     @if (rol == "Propietario" || g.CreadoPorId == usuarioId)

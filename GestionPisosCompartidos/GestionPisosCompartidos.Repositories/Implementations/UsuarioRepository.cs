@@ -41,7 +41,6 @@ namespace GestionPisosCompartidos.Repositories.Implementations
             existente.Email = usuario.Email;
             existente.Telefono = usuario.Telefono;
             existente.Rol = usuario.Rol;
-            existente.Activo = usuario.Activo;
 
             await _context.SaveChangesAsync();
             return existente;

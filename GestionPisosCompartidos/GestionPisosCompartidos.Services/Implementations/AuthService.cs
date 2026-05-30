@@ -48,8 +48,7 @@ namespace GestionPisosCompartidos.Services.Implementations
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 Telefono = registerDto.Telefono,
                 Rol = registerDto.Rol,
-                FechaRegistro = DateTime.UtcNow,
-                Activo = true
+                FechaRegistro = DateTime.UtcNow
             };
 
             var created = await _usuarioRepository.CreateAsync(usuario);

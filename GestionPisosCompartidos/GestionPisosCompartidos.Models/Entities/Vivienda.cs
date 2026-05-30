@@ -6,7 +6,7 @@ namespace GestionPisosCompartidos.Models.Entities;
 public partial class Vivienda
 {
     public int Id { get; set; }
-    public string Direccion { get; set; } = null!;
+    public string Calle { get; set; } = null!;
     public string? Numero { get; set; }
     public string? Piso { get; set; }
     public string? Puerta { get; set; }

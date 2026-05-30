@@ -13,7 +13,7 @@
                 <MudSelectItem Value="0">Selecciona vivienda</MudSelectItem>
                 @foreach (var v in viviendas)
                 {
-                    <MudSelectItem Value="@v.Id">@v.Direccion - @v.Ciudad</MudSelectItem>
+                    <MudSelectItem Value="@v.Id">@v.Calle - @v.Ciudad</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>
@@ -22,7 +22,7 @@
     {
         <MudItem xs="12" sm="6">
             <MudAlert Severity="Severity.Info">
-                Vivienda: @viviendaActiva.Direccion - @viviendaActiva.Ciudad
+                Vivienda: @viviendaActiva.Calle - @viviendaActiva.Ciudad
             </MudAlert>
         </MudItem>
     }
