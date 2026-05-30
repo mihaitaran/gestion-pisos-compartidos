@@ -47,7 +47,7 @@ else if (viviendaActiva != null)
                             <b>@m.Emisor?.Nombre @m.Emisor?.Apellidos</b>
                         </MudText>
                         <MudText Typo="Typo.body1">@m.Contenido</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@m.FechaEnvio</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@FormatHelper.FormatFechaHora(m.FechaEnvio)</MudText>
                     </MudPaper>
                 </div>
             }

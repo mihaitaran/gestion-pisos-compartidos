@@ -43,7 +43,7 @@ else
                         </div>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">@p.Inquilino?.Nombre @p.Inquilino?.Apellidos</MudText>
                         <MudText Typo="Typo.body1" Class="mt-2"><b>@p.Importe.ToString("F2") €</b></MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">Pagado: @(p.FechaPago ?? "-")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Pagado: @FormatHelper.FormatFecha(p.FechaPago)</MudText>
                     </MudCardContent>
                 </MudCard>
             </MudItem>

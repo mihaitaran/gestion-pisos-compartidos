@@ -52,7 +52,7 @@ else
             <MudTd>
                 <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(context.Estado)">@context.Estado</MudChip>
             </MudTd>
-            <MudTd>@(context.FechaPago ?? "-")</MudTd>
+            <MudTd>@FormatHelper.FormatFecha(context.FechaPago)</MudTd>
             <MudTd>
                 @if (context.Estado == "Pendiente")
                 {

@@ -151,11 +151,11 @@ else
                             <MudText Typo="Typo.h6">@t.Titulo</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@t.Descripcion</MudText>
                             <MudText Typo="Typo.caption" Class="mt-2">
-                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" /> @t.FechaProgramada
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" /> @FormatHelper.FormatFecha(t.FechaProgramada)
                             </MudText>
                             @if (t.AsignadaA != null)
                             {
-                                <MudText Typo="Typo.caption">Asignada a: @t.AsignadaA.Nombre @t.AsignadaA.Apellidos</MudText>
+                                <MudText Typo="Typo.caption"> Asignada a: @t.AsignadaA.Nombre @t.AsignadaA.Apellidos</MudText>
                             }
                             @if (t.Recurrente)
                             {
@@ -188,7 +188,7 @@ else
                     <MudCard Elevation="1" Style="opacity: 0.7;">
                         <MudCardContent>
                             <MudText Typo="Typo.h6" Style="text-decoration: line-through;">@t.Titulo</MudText>
-                            <MudText Typo="Typo.caption">@t.FechaProgramada</MudText>
+                            <MudText Typo="Typo.caption">@FormatHelper.FormatFecha(t.FechaProgramada)</MudText>
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -203,7 +203,7 @@ else
     </TitleContent>
     <DialogContent>
         <MudText Typo="Typo.body1" Class="mb-2">@tareaDetalle?.Descripcion</MudText>
-        <MudText Typo="Typo.body2">Fecha: @tareaDetalle?.FechaProgramada</MudText>
+        <MudText Typo="Typo.body2">Fecha: @FormatHelper.FormatFecha(tareaDetalle?.FechaProgramada)</MudText>
         <MudText Typo="Typo.body2">Asignada a: @(tareaDetalle?.AsignadaA != null ? $"{tareaDetalle.AsignadaA.Nombre} {tareaDetalle.AsignadaA.Apellidos}" : "Sin asignar")</MudText>
         @if (tareaDetalle?.Recurrente == true)
         {

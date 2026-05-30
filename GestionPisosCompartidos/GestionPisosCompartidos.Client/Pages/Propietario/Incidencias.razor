@@ -47,7 +47,7 @@ else
                         <MudText Typo="Typo.h6">@i.Titulo</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">@i.Vivienda?.Direccion</MudText>
                         <MudText Typo="Typo.body2">@i.ReportadaPor?.Nombre @i.ReportadaPor?.Apellidos</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@i.FechaCreacion</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@FormatHelper.FormatFecha(i.FechaCreacion)</MudText>
                     </MudCardContent>
                     @if (i.Estado != "Resuelta" && i.Estado != "Cerrada")
                     {
