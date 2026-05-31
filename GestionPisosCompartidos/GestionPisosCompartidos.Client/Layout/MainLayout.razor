@@ -54,6 +54,23 @@
                     return;
                 }
                 usuario = await AuthService.GetUserAsync();
+
+                usuario = await AuthService.GetUserAsync();
+
+                var rutasPropiertario = new[] { "/viviendas", "/pagos", "/incidencias" };
+                var rutasInquilino = new[] { "/mis-pagos", "/mis-incidencias" };
+
+                if (usuario?.Rol == "Inquilino" && rutasPropiertario.Any(r => uri.Contains(r)))
+                {
+                    Navigation.NavigateTo("/");
+                    return;
+                }
+
+                if (usuario?.Rol == "Propietario" && rutasInquilino.Any(r => uri.Contains(r)))
+                {
+                    Navigation.NavigateTo("/");
+                    return;
+                }
             }
             catch { }
         }
