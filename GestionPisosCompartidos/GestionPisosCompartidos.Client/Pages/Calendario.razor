@@ -395,7 +395,9 @@ else
                 {
                     Titulo = titulo,
                     Descripcion = descripcion,
-                    FechaProgramada = fechaProgramada,
+                    FechaProgramada = fechaProgramada.HasValue
+                        ? DateTime.SpecifyKind(fechaProgramada.Value.Date, DateTimeKind.Utc)
+                        : DateTime.UtcNow.Date,
                     AsignadaAid = asignadaAId > 0 ? asignadaAId : (int?)null,
                     Recurrente = recurrente,
                     FrecuenciaDias = recurrente ? frecuenciaDias : (int?)null
@@ -419,7 +421,9 @@ else
                     ViviendaId = viviendaSeleccionada,
                     Titulo = titulo,
                     Descripcion = descripcion,
-                    FechaProgramada = fechaProgramada,
+                    FechaProgramada = fechaProgramada.HasValue
+                    ? DateTime.SpecifyKind(fechaProgramada.Value.Date, DateTimeKind.Utc)
+                    : DateTime.UtcNow.Date,
                     CreadaPorId = usuarioId,
                     AsignadaAid = rol == "Inquilino" ? usuarioId : (asignadaAId > 0 ? asignadaAId : (int?)null),
                     Recurrente = recurrente,
