@@ -36,6 +36,8 @@ Aplicación web full-stack para la gestión de pisos compartidos entre propietar
 
 ## Modelo de datos
 
+![Diagrama Entidad-Relación](Documentación/Entidad-Relacion.png)
+
 Las entidades principales del sistema son:
 
 - **Usuario** — base de la especialización Propietario/Inquilino
