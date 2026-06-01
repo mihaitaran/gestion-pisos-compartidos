@@ -81,6 +81,13 @@ docker compose down
 
 > Los datos de la base de datos se persisten en un volumen Docker y no se pierden al parar los contenedores. Para borrar también los datos usa `docker compose down -v`.
 
+## Usuarios de prueba docker
+
+| Rol | Email | Contraseña |
+|---|---|---|
+| Propietario | admin@roommate.com | Admin123! |
+| Inquilino | inquilino@roommate.com | Inquilino123! |
+
 ## Ejecutar en local (desarrollo)
 
 ### Requisitos

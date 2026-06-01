@@ -1,13 +1,14 @@
+using GestionPisosCompartidos.Models.Entities;
 using GestionPisosCompartidos.Repositories.Data;
-using Microsoft.EntityFrameworkCore;
-using GestionPisosCompartidos.Repositories.Interfaces;
 using GestionPisosCompartidos.Repositories.Implementations;
-using GestionPisosCompartidos.Services.Interfaces;
+using GestionPisosCompartidos.Repositories.Interfaces;
 using GestionPisosCompartidos.Services.Implementations;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using GestionPisosCompartidos.Services.Integrations;
+using GestionPisosCompartidos.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +108,113 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    if (!db.Usuarios.Any())
+    {
+        var propietario = new Usuario
+        {
+            Nombre = "Admin",
+            Apellidos = "Propietario",
+            Email = "admin@roommate.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Rol = "Propietario",
+            FechaRegistro = DateTime.UtcNow
+        };
+
+        var inquilino = new Usuario
+        {
+            Nombre = "Inquilino",
+            Apellidos = "Demo",
+            Email = "inquilino@roommate.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Inquilino123!"),
+            Rol = "Inquilino",
+            FechaRegistro = DateTime.UtcNow
+        };
+
+        db.Usuarios.AddRange(propietario, inquilino);
+        db.SaveChanges();
+
+        var vivienda = new Vivienda
+        {
+            Calle = "Rúa da Xesteira",
+            Numero = "2",
+            Piso = "4",
+            Puerta = "A",
+            Ciudad = "Perillo",
+            CodigoPostal = "15172",
+            Descripcion = "Piso de prueba para demo",
+            PropietarioId = propietario.Id,
+            FechaCreacion = DateTime.UtcNow
+        };
+
+        db.Viviendas.Add(vivienda);
+        db.SaveChanges();
+
+        db.InquilinosViviendas.Add(new InquilinosVivienda
+        {
+            InquilinoId = inquilino.Id,
+            ViviendaId = vivienda.Id,
+            FechaInicio = DateOnly.FromDateTime(DateTime.Today),
+            Activo = true
+        });
+
+        var gasto = new Gasto
+        {
+            ViviendaId = vivienda.Id,
+            Concepto = "Factura de la luz",
+            Categoria = "Luz",
+            ImporteTotal = 60,
+            FechaGasto = DateOnly.FromDateTime(DateTime.Today),
+            FechaRegistro = DateTime.UtcNow,
+            CreadoPorId = propietario.Id
+        };
+
+        db.Gastos.Add(gasto);
+        db.SaveChanges();
+
+        db.Pagos.Add(new Pago
+        {
+            GastoId = gasto.Id,
+            InquilinoId = inquilino.Id,
+            Importe = 60,
+            Estado = "Pendiente"
+        });
+
+        db.Incidencias.Add(new Incidencia
+        {
+            ViviendaId = vivienda.Id,
+            ReportadaPorId = inquilino.Id,
+            Titulo = "Gotera en el baño",
+            Descripcion = "Hay una gotera en el techo del baño",
+            Prioridad = "Alta",
+            Estado = "Abierta",
+            FechaCreacion = DateTime.UtcNow
+        });
+
+        db.TareasCalendarios.Add(new TareasCalendario
+        {
+            ViviendaId = vivienda.Id,
+            Titulo = "Limpiar cocina",
+            Descripcion = "Limpiar encimera y suelo",
+            FechaProgramada = DateTime.Today.AddDays(2),
+            CreadaPorId = propietario.Id,
+            AsignadaAid = inquilino.Id,
+            Completada = false,
+            Recurrente = true,
+            FrecuenciaDias = 7,
+            FechaCreacion = DateTime.UtcNow
+        });
+
+        db.Mensajes.Add(new Mensaje
+        {
+            ViviendaId = vivienda.Id,
+            EmisorId = propietario.Id,
+            Contenido = "Bienvenido al piso, cualquier duda pregunta aquí.",
+            FechaEnvio = DateTime.UtcNow
+        });
+
+        db.SaveChanges();
+    }
 }
+
 
 app.Run();
