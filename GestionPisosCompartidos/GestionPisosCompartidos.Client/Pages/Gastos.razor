@@ -3,7 +3,6 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<MudText Typo="Typo.h4" Class="mb-4">Gastos</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => mostrarForm = !mostrarForm" Class="mb-4" Disabled="@(viviendas.Count == 0)">
     @(mostrarForm ? "Cancelar" : "Registrar gasto")

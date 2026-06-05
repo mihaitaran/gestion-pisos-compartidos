@@ -3,8 +3,6 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<MudText Typo="Typo.h4" Class="mb-4">Calendario de tareas</MudText>
-
 <MudGrid Class="mb-4">
     @if (rol == "Propietario")
     {
@@ -214,7 +212,7 @@ else
         </MudChip>
     </DialogContent>
     <DialogActions>
-        @if (tareaDetalle?.Completada == false)
+        @if (tareaDetalle?.Completada == false && PuedeCompletar(tareaDetalle))
         {
             <MudButton Color="Color.Success" OnClick="() => CompletarTarea(tareaDetalle!.Id)">Completar</MudButton>
         }

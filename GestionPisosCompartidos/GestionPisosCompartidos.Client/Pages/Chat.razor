@@ -6,8 +6,6 @@
 @inject IConfiguration Configuration
 @implements IAsyncDisposable
 
-<MudText Typo="Typo.h4" Class="mb-4">Chat de la vivienda</MudText>
-
 @if (rol == "Propietario")
 {
     <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="CambiarVivienda">
@@ -60,7 +58,12 @@ else if (viviendaActiva != null)
                           OnKeyUp="EnviarConEnter" />
         </MudItem>
         <MudItem xs="2" Class="d-flex align-center">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="EnviarMensaje">Enviar</MudButton>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="false">
+                <MudIconButton Icon="@Icons.Material.Filled.Send" Color="Color.Primary" Variant="Variant.Filled" OnClick="EnviarMensaje" />
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="EnviarMensaje">Enviar</MudButton>
+            </MudHidden>
         </MudItem>
     </MudGrid>
 }

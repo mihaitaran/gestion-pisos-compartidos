@@ -5,7 +5,7 @@
 
 @if (usuario != null)
 {
-    <MudPaper Class="menu-welcome" Elevation="0">
+    <MudPaper Class="menu-welcome mt-n1" Elevation="0">
         <MudText Typo="Typo.h4" Class="menu-welcome-title">Bienvenido, @usuario.Nombre</MudText>
         <MudText Typo="Typo.body1" Class="menu-welcome-subtitle">
             @(usuario.Rol == "Propietario" ? "Gestiona tus viviendas e inquilinos" : "Consulta tus pagos y tareas")

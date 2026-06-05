@@ -3,8 +3,6 @@
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 @inject NavigationManager Navigation
 
-<MudText Typo="Typo.h4" Class="mb-4">Lugares cercanos</MudText>
-
 @if (rol == "Propietario" && viviendas.Count > 0)
 {
     <MudSelect T="int" Value="viviendaSeleccionada" Label="Selecciona vivienda" Variant="Variant.Outlined" Class="mb-4" Style="max-width: 400px;" ValueChanged="CambiarVivienda">

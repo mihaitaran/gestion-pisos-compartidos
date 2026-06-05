@@ -2,8 +2,6 @@
 @inject HttpClient Http
 @inject GestionPisosCompartidos.Client.Services.AuthService AuthService
 
-<MudText Typo="Typo.h4" Class="mb-4">Mis pagos</MudText>
-
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="Severity.Info" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
@@ -38,29 +36,31 @@ else
         </MudItem>
     </MudGrid>
 
-    <MudTable Items="@pagos" Hover="true" Elevation="2">
-        <HeaderContent>
-            <MudTh>Concepto</MudTh>
-            <MudTh>Importe</MudTh>
-            <MudTh>Estado</MudTh>
-            <MudTh>Fecha pago</MudTh>
-            <MudTh>Acciones</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Gasto?.Concepto</MudTd>
-            <MudTd>@context.Importe.ToString("F2") €</MudTd>
-            <MudTd>
-                <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(context.Estado)">@context.Estado</MudChip>
-            </MudTd>
-            <MudTd>@FormatHelper.FormatFecha(context.FechaPago)</MudTd>
-            <MudTd>
-                @if (context.Estado == "Pendiente")
-                {
-                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Check" OnClick="() => MarcarPagado(context.Id)">Pagado</MudButton>
-                }
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudGrid>
+        @foreach (var p in pagos)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@p.Gasto?.Concepto</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@ColorHelper.GetEstadoColor(p.Estado)">@p.Estado</MudChip>
+                        </div>
+                        <MudText Typo="Typo.body1"><b>@p.Importe.ToString("F2") €</b></MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@FormatHelper.FormatFecha(p.FechaPago)</MudText>
+                    </MudCardContent>
+                    @if (p.Estado == "Pendiente")
+                    {
+                        <MudCardActions Class="justify-end">
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.Check"
+                                       OnClick="() => MarcarPagado(p.Id)">Pagado</MudButton>
+                        </MudCardActions>
+                    }
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {

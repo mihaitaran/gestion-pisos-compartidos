@@ -4,8 +4,6 @@
 @inject NavigationManager Navigation
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
-<MudText Typo="Typo.h4" Class="mb-4">Mi perfil</MudText>
-
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <MudAlert Severity="@severidadMensaje" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => mensaje = string.Empty">@mensaje</MudAlert>
